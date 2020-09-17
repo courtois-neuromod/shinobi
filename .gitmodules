@@ -2,3 +2,7 @@
 	path = .heudiconv
 	url = ./.heudiconv
 	datalad-id = 3b8c018c-f8f7-11ea-83ca-3ea8d101da1a
+[submodule "derivatives/fmriprep-20.2.0rc0"]
+	path = derivatives/fmriprep-20.2.0rc0
+	url = ./derivatives/fmriprep-20.2.0rc0
+	datalad-id = 8e86d16c-f926-11ea-83ca-3ea8d101da1a
