@@ -1,4 +1,4 @@
 [submodule "derivatives/fmriprep-20.2lts"]
 	path = derivatives/fmriprep-20.2lts
-	url = ./derivatives/fmriprep-20.2lts
+	url = git@github.com:courtois-neuromod/shinobi.fmriprep.git
 	datalad-id = bd1e0632-2b74-11eb-aa99-00000d37fe80
