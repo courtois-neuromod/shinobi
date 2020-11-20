@@ -1,12 +1,8 @@
-[submodule "derivatives/fmriprep-20.2.0rc0"]
-	path = derivatives/fmriprep-20.2.0rc0
-	url = ./derivatives/fmriprep-20.2.0rc0
-	datalad-id = 8e86d16c-f926-11ea-83ca-3ea8d101da1a
-[submodule ".heudiconv"]
-	path = .heudiconv
-	url = ./.heudiconv
-	datalad-id = aba0c1ac-25ba-11eb-8634-1a44c1d5432b
 [submodule "sourcedata"]
 	path = sourcedata
 	url = ./sourcedata
 	datalad-id = 741d68a2-2a9c-11eb-8634-1a44c1d5432b
+[submodule "derivatives/fmriprep-20.2lts"]
+	path = derivatives/fmriprep-20.2lts
+	url = git@github.com:courtois-neuromod/shinobi.fmriprep.git
+	datalad-id = bd1e0632-2b74-11eb-aa99-00000d37fe80
