@@ -1,2 +1,3 @@
 .slurm
+sourcedata
 .pybids_cache*
