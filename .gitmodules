@@ -8,5 +8,5 @@
 	datalad-id = bd1e0632-2b74-11eb-aa99-00000d37fe80
 [submodule "stimuli"]
 	path = stimuli
-	url = ./stimuli
+	url = git@github.com:courtois-neuromod/shinobi.stimuli.git
 	datalad-id = 74cb8a6e-664b-11eb-a4f2-1a44c1d5432b
