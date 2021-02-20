@@ -6,10 +6,6 @@
 	path = derivatives/fmriprep-20.2lts
 	url = git@github.com:courtois-neuromod/shinobi.fmriprep.git
 	datalad-id = bd1e0632-2b74-11eb-aa99-00000d37fe80
-[submodule ".heudiconv"]
-	path = .heudiconv
-	url = ./.heudiconv
-	datalad-id = 1ea22a20-618d-11eb-a4f2-1a44c1d5432b
 [submodule "stimuli"]
 	path = stimuli
 	url = git@github.com:courtois-neuromod/shinobi.stimuli.git
