@@ -1,1 +1,4 @@
-onset	duration	trial_type	response_time	stim_file	TODO -- fill in rows and add more tab-separated columns if desired
+trial_type	onset	duration	level	stim_file
+gym-retro_game	0.007599999982630834	245.07090000002063	1-0	sourcedata/sub-06/ses-shinobi_003/sub-06_ses-shinobi_003_20201218-144357_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_003.bk2
+gym-retro_game	251.11209999999846	193.0682000000088	4-1	sourcedata/sub-06/ses-shinobi_003/sub-06_ses-shinobi_003_20201218-144357_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_002.bk2
+gym-retro_game	450.2146000000066	229.3855999999796	5-0	
