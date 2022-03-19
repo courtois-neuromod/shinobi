@@ -15,7 +15,7 @@ def clean_eventfiles():
         dataframe = pd.read_csv(eventfile, sep='\t')
         dataframe = dataframe.fillna('Missing file')
         for idx, stimfile in enumerate(dataframe['stim_file']):
-            if '/' in stimfile:
+            if '/' in stimfile and not 'behavior' in stimfile:
                 split_string = stimfile.split('/')
                 split_string.insert(2, 'behavior')
                 final_string = '/'.join(split_string)
