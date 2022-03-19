@@ -31,13 +31,6 @@ def test_eventfiles():
     bk2files_infolder.sort()
     bk2files_fromevents.sort()
 
-    for idx, file in enumerate(bk2files_fromevents):
-        split_string = file.split('/')
-        split_string.insert(2, 'behavior')
-        final_string = '/'.join(split_string)
-        bk2files_fromevents[idx] = final_string
-
-
 
 
     in_source_in_events = [x for x in bk2files_infolder if x in bk2files_fromevents]
