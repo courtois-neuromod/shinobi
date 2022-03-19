@@ -1,5 +1,5 @@
-	trial_type	onset	duration	duration_bk2	level	stim_file
-0	gym-retro_game	0.0076000000117346	161.08479999998235	181.91666666666663	1-0	Missing file
-1	gym-retro_game	167.1594000000041	113.12210000000778	113.13333333333334	4-1	sourcedata/sub-01/behavior/ses-shinobi_004/sub-01_ses-shinobi_004_20201016-110142_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_003.bk2
-2	gym-retro_game	286.3113000000012	156.2679000000062	156.28333333333333	5-0	sourcedata/sub-01/behavior/ses-shinobi_004/sub-01_ses-shinobi_004_20201016-110142_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level5-0_003.bk2
-3	gym-retro_game	448.6135000000068	177.93559999999707	177.93333333333334	1-0	sourcedata/sub-01/behavior/ses-shinobi_004/sub-01_ses-shinobi_004_20201016-110142_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_005.bk2
+trial_type	onset	duration	duration_bk2	level	stim_file
+gym-retro_game	0.0076000000117346644	161.08479999998235	181.91666666666666	1-0	
+gym-retro_game	167.1594000000041	113.12210000000778	113.13333333333334	4-1	sourcedata/sub-01/ses-shinobi_004/sub-01_ses-shinobi_004_20201016-110142_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_003.bk2
+gym-retro_game	286.3113000000012	156.2679000000062	156.28333333333333	5-0	sourcedata/sub-01/ses-shinobi_004/sub-01_ses-shinobi_004_20201016-110142_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level5-0_003.bk2
+gym-retro_game	448.61350000000675	177.93559999999707	177.93333333333334	1-0	sourcedata/sub-01/ses-shinobi_004/sub-01_ses-shinobi_004_20201016-110142_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_005.bk2
