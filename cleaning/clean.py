@@ -20,7 +20,7 @@ def clean_eventfiles():
                 split_string.insert(1, 'behavior')
                 final_string = '/'.join(split_string)
                 dataframe['stim_file'][idx] = final_string
-        dataframe.to_csv(eventfile, sep='\t')
+        dataframe.to_csv(eventfile)
 
 def main():
     clean_eventfiles()
