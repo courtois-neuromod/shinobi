@@ -1,6 +1,6 @@
-trial_type	onset	duration	duration_bk2	level	stim_file
-gym-retro_game	0.009599999990314245	175.0922000000137	175.15	1-0	sourcedata/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_000.bk2
-gym-retro_game	181.13529999999446	104.78390000000945	104.8	4-1	sourcedata/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_000.bk2
-gym-retro_game	291.95299999999406	141.70110000000568	141.71666666666667	5-0	sourcedata/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level5-0_000.bk2
-gym-retro_game	439.70440000000235	153.45119999999588	153.46666666666667	1-0	sourcedata/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_001.bk2
-gym-retro_game	599.1892999999982	113.36740000000282	113.36666666666666	4-1	sourcedata/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_001.bk2
+	trial_type	onset	duration	duration_bk2	level	stim_file
+0	gym-retro_game	0.0095999999903142	175.0922000000137	175.15	1-0	sourcedata/behavior/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_000.bk2
+1	gym-retro_game	181.1352999999945	104.78390000000944	104.8	4-1	sourcedata/behavior/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_000.bk2
+2	gym-retro_game	291.95299999999406	141.70110000000568	141.71666666666667	5-0	sourcedata/behavior/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level5-0_000.bk2
+3	gym-retro_game	439.7044000000024	153.45119999999588	153.46666666666667	1-0	sourcedata/behavior/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_001.bk2
+4	gym-retro_game	599.1892999999982	113.36740000000282	113.36666666666666	4-1	sourcedata/behavior/sub-01/ses-shinobi_011/sub-01_ses-shinobi_011_20201204-095413_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_001.bk2
