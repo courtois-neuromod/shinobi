@@ -17,7 +17,7 @@ def clean_eventfiles():
         for idx, stimfile in enumerate(dataframe['stim_file']):
             if '/' in stimfile and not 'behavior' in stimfile:
                 split_string = stimfile.split('/')
-                split_string.insert(2, 'behavior')
+                split_string.insert(1, 'behavior')
                 final_string = '/'.join(split_string)
                 dataframe['stim_file'][idx] = final_string
         dataframe.to_csv(eventfile, sep='\t')
