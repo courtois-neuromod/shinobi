@@ -31,21 +31,28 @@ def test_eventfiles():
             if ".bk2" in file and "ShinobiIII" in file:
                 bk2files_infolder.append(op.join(root, file))
 
+    # TODO : add './' in front of bk2files_fromevents
     bk2files_infolder.sort()
     bk2files_fromevents.sort()
 
     in_source_in_events = [x for x in bk2files_infolder if x in bk2files_fromevents]
 
-    in_events_not_in_source = [x for x in bk2files_fromevents if x not in bk2files_infolder]
+    in_events_not_in_source = [
+        x for x in bk2files_fromevents if x not in bk2files_infolder
+    ]
 
     # Get a list of bk2 files that aren't reference in the events.tsv
-    in_source_not_in_events = [x for x in bk2files_infolder if x not in bk2files_fromevents]
+    in_source_not_in_events = [
+        x for x in bk2files_infolder if x not in bk2files_fromevents
+    ]
     with open("bk2files_not_in_events.log", "w") as f:
         f.write("\n".join(in_source_not_in_events))
 
     assert (
         len(in_events_not_in_source) == 0
     ), "Files referenced in the events.tsv are missing from the sourcedata folder."
+    # TODO : print la liste des fichiers manquants
+    # TODO : ajouter ces fichiers dans un fichier créé pour l'occasion et le supprimer si le test réussi
 
 
 def test_event_files_not_empty():
@@ -71,7 +78,10 @@ def test_durations():
         if len(rows) > 1:
             for row in rows[1:]:
                 onset, duration, duration_bk2, level, bk2_path = row[2:]
-                if bk2_path != "Missing file" and abs(float(duration) - float(duration_bk2)) > 0.1:
+                if (
+                    bk2_path != "Missing file"
+                    and abs(float(duration) - float(duration_bk2)) > 0.1
+                ):
                     problematic_bk2.append(
                         f"{bk2_path} : duration={duration}, duration_bk2={duration_bk2}"
                     )
@@ -80,9 +90,9 @@ def test_durations():
 
             with open(json_path, "r") as f:
                 run_metadata = json.load(f)
-            bold_duration = float(run_metadata["time"]["samples"]["AcquisitionTime"][-1]) - float(
-                run_metadata["time"]["samples"]["AcquisitionTime"][0]
-            )
+            bold_duration = float(
+                run_metadata["time"]["samples"]["AcquisitionTime"][-1]
+            ) - float(run_metadata["time"]["samples"]["AcquisitionTime"][0])
             if bold_duration < run_duration or bold_duration > run_duration + 30:
                 problematic_bold.append(
                     f"{json_path} : bold duration={bold_duration}, duration from events={run_duration}"
