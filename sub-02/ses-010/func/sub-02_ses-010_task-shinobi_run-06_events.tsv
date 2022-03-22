@@ -1,4 +1,4 @@
-	trial_type	onset	duration	duration_bk2	level	stim_file
+Unnamed: 0	trial_type	onset	duration	duration_bk2	level	stim_file
 0	gym-retro_game	0.0097000000023399	165.59209999999803	165.65	1-0	sourcedata/behavior/sub-02/ses-shinobi_010/sub-02_ses-shinobi_010_20201116-114923_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_000.bk2
 1	gym-retro_game	171.6353999999992	148.8679000000011	148.88333333333333	4-1	sourcedata/behavior/sub-02/ses-shinobi_010/sub-02_ses-shinobi_010_20201116-114923_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_000.bk2
 2	gym-retro_game	326.5371000000014	161.28499999999983	161.3	5-0	sourcedata/behavior/sub-02/ses-shinobi_010/sub-02_ses-shinobi_010_20201116-114923_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level5-0_000.bk2
