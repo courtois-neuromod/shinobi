@@ -1,4 +1,4 @@
-	trial_type	onset	duration	duration_bk2	level	stim_file
+Unnamed: 0	trial_type	onset	duration	duration_bk2	level	stim_file
 0	gym-retro_game	0.0078000000066822	140.77419999999984	176.1	1-0	Missing file
 1	gym-retro_game	145.6290000000008	43.69690000000992	87.7	4-1	Missing file
 2	gym-retro_game	194.1594000000041	153.34339999999793	191.78333333333333	5-0	Missing file
