@@ -33,7 +33,6 @@ def test_eventfiles():
     for root, directory, files in os.walk(datapath):
         for file in files:
             if ".bk2" in file and "ShinobiIII" in file:
-                print(op.join(root, file))
                 bk2files_infolder.append(op.join(root, file))
 
     bk2files_infolder.sort()
