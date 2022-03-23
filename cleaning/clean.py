@@ -5,6 +5,11 @@ import numpy as np
 
 
 def clean_eventfiles():
+    """Reads every events.tsv file and (1) replace NaNs by a meaningful string,
+    (2) removes Unnamed columns (that could've been created by mistake while
+    handling dataframes) and (3) adjust the filepath to add the "behavior" folder.
+
+    """
     datapath = "./"
     eventfiles_list = []
     for root, directory, files in os.walk(datapath):
@@ -14,11 +19,13 @@ def clean_eventfiles():
 
     for eventfile in sorted(eventfiles_list):
         dataframe = pd.read_csv(eventfile, sep="\t")
+        # Replace NaN by proper string
         dataframe = dataframe.fillna("Missing file")
         # remove junk columns
         for column_name in dataframe.columns:
             if "Unnamed" in column_name:
                 dataframe = dataframe.drop(columns=column_name)
+        # Adjust the sourcedata filepath
         for idx, stimfile in enumerate(dataframe["stim_file"]):
             if "/" in stimfile and not "behavior" in stimfile:
                 split_string = stimfile.split("/")
