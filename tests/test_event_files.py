@@ -16,15 +16,12 @@ def test_eventfiles():
 
     """
     datapath = "./"
-    eventfiles_list = []
-    for root, directory, files in os.walk(datapath):
-        for file in files:
-            if "events.tsv" in file:
-                eventfiles_list.append(op.join(root, file))
+    eventfiles_list = glob.glob("sub-*/ses-*/func/*_events.tsv")
 
     bk2files_fromevents = []
     for eventfile in sorted(eventfiles_list):
         event_dataframe = pd.read_csv(eventfile, sep="\t")
+        assert ("stim_file" in event_dataframe)
         for filepath in event_dataframe["stim_file"]:
             if filepath != "Missing file":
                 bk2files_fromevents.append(op.join(datapath, filepath))
@@ -87,7 +84,7 @@ def test_durations():
             rows = [row for row in events]
         if len(rows) > 1:
             for row in rows[1:]:
-                onset, duration, duration_bk2, level, bk2_path = row[2:]
+                onset, duration, duration_bk2, level, bk2_path = row[1:]
                 if (
                     bk2_path != "Missing file"
                     and abs(float(duration) - float(duration_bk2))
