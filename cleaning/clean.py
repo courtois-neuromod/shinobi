@@ -36,6 +36,8 @@ def clean_eventfiles():
 
 def bk2_to_bids():
     """Moves .bk2 files from the sourcedata folder to a proper BIDS structure.
+    This function requires that the raw .bk2 files are present in the
+    sourcedata folder.
     """
     datapath = "./"
     eventfiles_list = []
