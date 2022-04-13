@@ -1,5 +1,5 @@
 trial_type	onset	duration	duration_bk2	level	stim_file
-gym-retro_game	0.0081000000063795	164.58299999999872	164.65	1-0	sourcedata/behavior/sub-02/ses-shinobi_013/sub-02_ses-shinobi_013_20201207-104203_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_000.bk2
-gym-retro_game	170.625	158.03429999999935	158.05	4-1	sourcedata/behavior/sub-02/ses-shinobi_013/sub-02_ses-shinobi_013_20201207-104203_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level4-1_000.bk2
-gym-retro_game	334.6934000000037	159.13499999999476	159.15	5-0	sourcedata/behavior/sub-02/ses-shinobi_013/sub-02_ses-shinobi_013_20201207-104203_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level5-0_000.bk2
-gym-retro_game	499.8616000000038	161.11819999999716	161.11666666666667	1-0	sourcedata/behavior/sub-02/ses-shinobi_013/sub-02_ses-shinobi_013_20201207-104203_ShinobiIIIReturnOfTheNinjaMaster-Genesis_Level1-0_001.bk2
+gym-retro_game	0.0081000000063795	164.58299999999872	164.65	1-0	sub-02/ses-013/gamelogs/sub-02_ses-013_task-shinobi_run-01_level-1_rep-01.bk2
+gym-retro_game	170.625	158.03429999999935	158.05	4-1	sub-02/ses-013/gamelogs/sub-02_ses-013_task-shinobi_run-01_level-4_rep-01.bk2
+gym-retro_game	334.6934000000037	159.13499999999476	159.15	5-0	sub-02/ses-013/gamelogs/sub-02_ses-013_task-shinobi_run-01_level-5_rep-01.bk2
+gym-retro_game	499.8616000000038	161.11819999999716	161.11666666666667	1-0	sub-02/ses-013/gamelogs/sub-02_ses-013_task-shinobi_run-01_level-1_rep-02.bk2
