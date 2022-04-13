@@ -39,20 +39,24 @@ def test_eventfiles():
     bk2files_fromevents.sort()
 
     # Get a list of bk2 files that are referenced in the events.tsv but not found in sourcedata
-    in_events_not_in_source = [x for x in bk2files_fromevents if x not in bk2files_infolder]
+    in_events_not_in_source = [
+        x for x in bk2files_fromevents if x not in bk2files_infolder
+    ]
 
     # Get a list of bk2 files that aren't referenced in the events.tsv
-    in_source_not_in_events = [x for x in bk2files_infolder if x not in bk2files_fromevents]
+    in_source_not_in_events = [
+        x for x in bk2files_infolder if x not in bk2files_fromevents
+    ]
 
     error_msg = ""
     if in_events_not_in_source:
-        error_msg += (
-            "\nFollowing files referenced in event files are not in the sourcedata folder:\n"
-        )
+        error_msg += "\nFollowing files referenced in event files are not in the sourcedata folder:\n"
         error_msg += "\n".join(in_events_not_in_source)
 
     if in_source_not_in_events:
-        error_msg += "\nFollowing in the sourcedata folder are not referenced in event files:\n"
+        error_msg += (
+            "\nFollowing in the sourcedata folder are not referenced in event files:\n"
+        )
         error_msg += "\n".join(in_source_not_in_events)
 
     assert not in_events_not_in_source and not in_source_not_in_events, error_msg
@@ -86,7 +90,8 @@ def test_durations():
                 onset, duration, duration_bk2, level, bk2_path = row[2:]
                 if (
                     bk2_path != "Missing file"
-                    and abs(float(duration) - float(duration_bk2)) > BK2_DURATION_DIFF_THRES
+                    and abs(float(duration) - float(duration_bk2))
+                    > BK2_DURATION_DIFF_THRES
                 ):
                     problematic_bk2.append(
                         f"{bk2_path} : duration={duration}, duration_bk2={duration_bk2}"
@@ -96,7 +101,9 @@ def test_durations():
 
             with open(json_path, "r") as f:
                 run_metadata = json.load(f)
-            bold_duration = run_metadata["dcmmeta_shape"][-1] * run_metadata["RepetitionTime"]
+            bold_duration = (
+                run_metadata["dcmmeta_shape"][-1] * run_metadata["RepetitionTime"]
+            )
             if (
                 bold_duration < run_duration
                 or bold_duration > run_duration + BOLD_DURATION_DIFF_THRES
@@ -114,3 +121,6 @@ def test_durations():
         error_msg += "\n".join(problematic_bold)
 
     assert not problematic_bk2 and not problematic_bold, error_msg
+
+
+# TODO : test to check that runs/sessions are in consecutive order
