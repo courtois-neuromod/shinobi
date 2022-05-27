@@ -16,14 +16,14 @@ def test_eventfiles():
 
     """
     datapath = "./"
-    eventfiles_list = glob.glob("sub-*/ses-*/func/*_events.tsv")
+    eventfiles_list = sorted(glob.glob("sub-*/ses-*/func/*_events.tsv"))
 
     bk2files_fromevents = []
     for eventfile in sorted(eventfiles_list):
         event_dataframe = pd.read_csv(eventfile, sep="\t")
         assert ("stim_file" in event_dataframe)
         for filepath in event_dataframe["stim_file"]:
-            if filepath != "Missing file":
+            if filepath != "Missing file" and not pd.isna(filepath):
                 bk2files_fromevents.append(op.join(datapath, filepath))
 
     bk2files_infolder = []
@@ -77,7 +77,7 @@ def test_durations():
     corresponds to the duration mentioned in bold.json files."""
     problematic_bk2 = []
     problematic_bold = []
-    for event_path in glob.glob("sub-*/ses-*/func/*_events.tsv"):
+    for event_path in sorted(glob.glob("sub-*/ses-*/func/*_events.tsv")):
         json_path = event_path.replace("_events.tsv", "_bold.json")
         with open(event_path, "r") as f:
             events = csv.reader(f, delimiter="\t")
