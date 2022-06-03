@@ -1,4 +1,4 @@
-import os
+import os, glob
 import os.path as op
 import pandas as pd
 import numpy as np
@@ -10,14 +10,9 @@ def clean_eventfiles():
     handling dataframes) and (3) adjust the filepath to add the "behavior" folder.
 
     """
-    datapath = "./"
-    eventfiles_list = []
-    for root, directory, files in os.walk(datapath):
-        for file in files:
-            if "events.tsv" in file:
-                eventfiles_list.append(op.join(root, file))
-
+    eventfiles_list = glob.glob('sourcedata/behavior/sub-*/ses-*/*task-*.tsv')
     for eventfile in sorted(eventfiles_list):
+#        print(eventfile)
         dataframe = pd.read_csv(eventfile, sep="\t")
         # Replace NaN by proper string
         dataframe = dataframe.fillna("Missing file")
@@ -39,15 +34,10 @@ def bk2_to_bids():
     This function requires that the raw .bk2 files are present in the
     sourcedata folder.
     """
-    datapath = "./"
-    eventfiles_list = []
-    # Get TSV list
-    for root, directory, files in os.walk(datapath):
-        for file in files:
-            if "events.tsv" in file:
-                eventfiles_list.append(op.join(root, file))
+    eventfiles_list = glob.glob('sourcedata/behavior/sub-*/ses-*/*task-shinobi*.tsv')
     # Open TSV and obtain bk2 path
     for eventfile in sorted(eventfiles_list):
+        print(eventfile)
         dataframe = pd.read_csv(eventfile, sep="\t")
 
         for idx, stimfile in enumerate(dataframe["stim_file"]):
@@ -65,7 +55,7 @@ def bk2_to_bids():
                 os.makedirs(fpath, exist_ok=True)
                 os.system(f'cp {stimfile} {op.join(fpath, fname)}')
                 # Modify events.tsv
-                dataframe["stim_file"][idx] = op.join(fpath, fname)
+                dataframe["stim_file",idx] = op.join(fpath, fname)
         dataframe.to_csv(eventfile, sep="\t", index=False)
 
 

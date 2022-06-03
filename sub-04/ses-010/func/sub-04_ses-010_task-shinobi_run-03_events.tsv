@@ -1,1 +1,6 @@
-onset	duration	trial_type	response_time	stim_file	TODO -- fill in rows and add more tab-separated columns if desired
+trial_type	game	level	stim_file	onset	sample
+gym-retro_game	ShinobiIIIReturnOfTheNinjaMaster-Genesis	Level1-0	sub-04/ses-010/gamelogs/sub-04_ses-010_task-shinobi_run-03_level-1_rep-02.bk2	0.004968881607055664	1138529.379558237
+gym-retro_game	ShinobiIIIReturnOfTheNinjaMaster-Genesis	Level4-1	sub-04/ses-010/gamelogs/sub-04_ses-010_task-shinobi_run-03_level-4_rep-02.bk2	177.40347290039062	1138706.778065542
+gym-retro_game	ShinobiIIIReturnOfTheNinjaMaster-Genesis	Level5-0	sub-04/ses-010/gamelogs/sub-04_ses-010_task-shinobi_run-03_level-5_rep-02.bk2	269.0508940219879	1138798.425486769
+gym-retro_game	ShinobiIIIReturnOfTheNinjaMaster-Genesis	Level1-0	sub-04/ses-010/gamelogs/sub-04_ses-010_task-shinobi_run-03_level-1_rep-03.bk2	448.7626910209656	1138978.137283708
+gym-retro_game	ShinobiIIIReturnOfTheNinjaMaster-Genesis	Level4-1	sub-04/ses-010/gamelogs/sub-04_ses-010_task-shinobi_run-03_level-4_rep-03.bk2	538.126827955246	1139067.501421439
