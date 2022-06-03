@@ -1,5 +1,5 @@
 trial_type	onset	duration	duration_bk2	level	stim_file
-gym-retro_game	0.0076999999982945	165.42079999999987	161.1	1-0	Missing file
-gym-retro_game	171.46270000000004	189.3833999999988	189.4	4-1	sub-02/ses-007/gamelogs/sub-02_ses-007_task-shinobi_run-05_level-4_rep-04.bk2
-gym-retro_game	366.8801999999996	171.95060000000012	171.96666666666667	5-0	sub-02/ses-007/gamelogs/sub-02_ses-007_task-shinobi_run-05_level-5_rep-04.bk2
-gym-retro_game	544.8643000000011	171.59989999999743	171.6	1-0	sub-02/ses-007/gamelogs/sub-02_ses-007_task-shinobi_run-05_level-1_rep-05.bk2
+gym-retro_game	0.0076999999982945155	165.42079999999987	161.1	1-0	
+gym-retro_game	171.46270000000004	189.3833999999988	189.4	4-1	sub-02/ses-007/gamelogs/sub-02_ses-007_task-shinobi_run-05_level-4_rep-4.bk2
+gym-retro_game	366.8801999999996	171.95060000000012	171.96666666666667	5-0	sub-02/ses-007/gamelogs/sub-02_ses-007_task-shinobi_run-05_level-5_rep-4.bk2
+gym-retro_game	544.8643000000011	171.59989999999743	171.6	1-0	sub-02/ses-007/gamelogs/sub-02_ses-007_task-shinobi_run-05_level-1_rep-5.bk2
