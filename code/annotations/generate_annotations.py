@@ -53,7 +53,7 @@ def extract_variables(filepath):
 
     # Run the first step to obtain variable keys
     _, _, _, frame_variables = env.step([key_log.get_key(i, 0) for i in range(env.num_buttons)])
-    
+
     # Init all entries
     for key in frame_variables:
         repetition_variables[key] = []
@@ -324,7 +324,7 @@ def main():
     # Get datapath
     args = parser.parse_args()
     DATA_PATH = args.datapath
-    if DATA_PATH = ".":
+    if DATA_PATH == ".":
         print("No data path specified. Searching files in this folder.")
 
     # Process each file
