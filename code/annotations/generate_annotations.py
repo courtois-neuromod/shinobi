@@ -5,6 +5,7 @@
 # TODO : keypress events are sometimes off by 1 frame (investigate ?)
 
 import retro
+import os
 import os.path as op
 import pandas as pd
 import numpy as np
@@ -337,11 +338,12 @@ def main():
                 bk2_files = events_dataframe['stim_file'].values.tolist()
                 runvars = []
                 for bk2_file in bk2_files:
-                    bk2_fname = op.join(root.replace("func", "gamelogs"), bk2_file)
+                    bk2_fname = op.join(DATA_PATH, bk2_file)
                     if op.exists(bk2_fname):
                         repvars = extract_variables(bk2_fname)
                         runvars.append(repvars)
                 events_df_annotated = create_runevents(runvars, events_dataframe)
+                breakpoint()
                 events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
                 events_annotated_fname = run_events_file.replace("_events.", "_annotated_events.")
                 events_df_annotated.to_csv(events_annotated_fname, sep="\t")
