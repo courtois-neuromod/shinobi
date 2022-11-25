@@ -1,15 +1,23 @@
 # Generate annotations of game events and add them to the events_file
 # Requires gym-retro installed with Shinobi III : Return of the Ninja Master properly integrated
 # NB : currently assumes that the framerate stayed constant at 60fps, which is likely not the case (based on discrepancies in bk2/events durations values)
-# TODO : implement a correction to correct bk2 timings and make sure they fit within events.tsv repetition events
+# TODO : correct for difference with bk2 timings and make sure they fit within the gym-retro_game event in events.tsv
+# TODO : keypress events are sometimes off by 1 frame (investigate ?)
 
 import retro
 import os.path as op
 import pandas as pd
+import numpy as np
+import argparse
 
-
-# Constants
-DATA_PATH = "/scratch/hyruuk/neuromod/shinobi2023/shinobi.fmriprep"
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-d",
+    "--datapath",
+    default='.',
+    type=str,
+    help="Data path to look for events.tsv and .bk2 files. Should be the root of the shinobi dataset.",
+)
 
 def extract_variables(filepath):
     """Runs the logfile to generate a dict that saves all the variables indexed
@@ -27,12 +35,13 @@ def extract_variables(filepath):
         containing the state of a variable at each frame across a whole
         repetition.
     """
+    # Grab some info
     split_filepath = filepath.split("/")
     split_filename = split_filepath[-1].split("_")
     level = split_filename[-2][-1]
-
+    
+    # Instantiate emulator
     env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis", state=f"Level{level}")
-
     key_log = retro.Movie(filepath)
     env.reset()
 
@@ -41,8 +50,10 @@ def extract_variables(filepath):
     repetition_variables["filename"] = filepath
     repetition_variables["level"] = level
     repetition_variables["actions"] = env.buttons
+
     # Run the first step to obtain variable keys
     _, _, _, frame_variables = env.step([key_log.get_key(i, 0) for i in range(env.num_buttons)])
+    
     # Init all entries
     for key in frame_variables:
         repetition_variables[key] = []
@@ -303,7 +314,6 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
             duration.append(dur)
             trial_type.append('HealthGain')
 
-    #build df
     events_df = pd.DataFrame(data={'onset':onset,
                                'duration':duration,
                                'trial_type':trial_type})
@@ -311,25 +321,31 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
 
 
 def main():
-    filepath = op.join(DATA_PATH, "sourcedata","shinobi", "sub-01", "ses-002", "gamelogs", 
-                       "sub-01_ses-002_task-shinobi_run-01_level-1_rep-02.bk2")
+    # Get datapath
+    args = parser.parse_args()
+    DATA_PATH = args.datapath
+    if DATA_PATH = ".":
+        print("No data path specified. Searching files in this folder.")
 
-
-    run_events_file = op.join(DATA_PATH, "sourcedata","shinobi", "sub-01", "ses-002", "func", "sub-01_ses-002_task-shinobi_run-01_events.tsv")
-    events_dataframe = pd.read_table(run_events_file)
-    files = events_dataframe['stim_file'].values.tolist()
-    # Retrieve variables from these files
-    runvars = []
-    for idx, file in enumerate(files):
-        if isinstance(file, str):
-            repvars = extract_variables(op.join(DATA_PATH, "sourcedata", "shinobi", file))
-            runvars.append(repvars)
-    events_df_annotated = create_runevents(runvars, events_dataframe)
-    events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
-    events_df_annotated.to_csv("/home/hyruuk/temp/shinobi_annotations_test.tsv", sep="\t")
-
-
-    print(events_df_annotated)
+    # Process each file
+    for root, folder, files in os.walk(DATA_PATH):
+        for file in files:
+            if "events.tsv" in file:
+                run_events_file = op.join(root, file)
+                print(f"Processing : {file}")
+                events_dataframe = pd.read_table(run_events_file)
+                bk2_files = events_dataframe['stim_file'].values.tolist()
+                runvars = []
+                for bk2_file in bk2_files:
+                    bk2_fname = op.join(root.replace("func", "gamelogs"), bk2_file)
+                    if op.exists(bk2_fname):
+                        repvars = extract_variables(bk2_fname)
+                        runvars.append(repvars)
+                events_df_annotated = create_runevents(runvars, events_dataframe)
+                events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
+                events_annotated_fname = run_events_file.replace("_events.", "_annotated_events.")
+                events_df_annotated.to_csv(events_annotated_fname, sep="\t")
+                print("Done.")
     
 
 if __name__ == "__main__":
