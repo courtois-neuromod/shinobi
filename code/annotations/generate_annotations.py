@@ -343,7 +343,6 @@ def main():
                         repvars = extract_variables(bk2_fname)
                         runvars.append(repvars)
                 events_df_annotated = create_runevents(runvars, events_dataframe)
-                breakpoint()
                 events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
                 events_annotated_fname = run_events_file.replace("_events.", "_annotated_events.")
                 events_df_annotated.to_csv(events_annotated_fname, sep="\t")
