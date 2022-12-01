@@ -1,1 +1,6 @@
-onset	duration	trial_type	response_time	stim_file	TODO -- fill in rows and add more tab-separated columns if desired
+trial_type	onset	duration	duration_bk2	level	stim_file
+gym-retro_game	0.0075999999971827	172.09450000000652	164.45	1-0	Missing file
+gym-retro_game	178.1356999999989	69.61689999999362	69.63333333333334	4-1	sub-02/ses-009/gamelogs/sub-02_ses-009_task-shinobi_run-03_level-4_rep-03.bk2
+gym-retro_game	253.7859999999928	171.7832000000053	171.8	5-0	sub-02/ses-009/gamelogs/sub-02_ses-009_task-shinobi_run-03_level-5_rep-03.bk2
+gym-retro_game	431.63679999999295	166.4499000000069	166.46666666666667	1-0	sub-02/ses-009/gamelogs/sub-02_ses-009_task-shinobi_run-03_level-1_rep-04.bk2
+gym-retro_game	604.1374999999971	167.98309999999765	167.98333333333332	4-1	sub-02/ses-009/gamelogs/sub-02_ses-009_task-shinobi_run-03_level-4_rep-04.bk2
