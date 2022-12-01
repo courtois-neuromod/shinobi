@@ -3,7 +3,7 @@
 
 The [Courtois project on Neural Modelling (Courtois NeuroMod)](https://www.cneuromod.ca/) aims at training artificial neural networks using extensive experimental data on individual human brain activity and behaviour.
 
-Participants played 3 selected levels of *Shinobi III: The Return of the Ninja Master*, while functional MRI data was acquired. A extensive description can be found [here](https://docs.cneuromod.ca/en/latest/DATASETS.html#shinobi).
+Participants played 3 selected levels of *Shinobi III: Return of the Ninja Master*, while functional MRI data was acquired. A extensive description can be found [here](https://docs.cneuromod.ca/en/latest/DATASETS.html#shinobi).
 
 This subdataset is organized following the [brain imaging data structure (BIDS)](https://bids.neuroimaging.io/) (including extensions in development) and contains:
 - [x] [raw neuroimaging data](https://docs.cneuromod.ca/en/latest/MRI.html#functional-sequences)
