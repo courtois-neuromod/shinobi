@@ -74,6 +74,17 @@
         "content",
         "talk"
       ]
+    },
+    {
+      "login": "cyrand",
+      "name": "cyrand",
+      "avatar_url": "https://avatars.githubusercontent.com/u/50246550?v=4",
+      "profile": "https://github.com/cyrand",
+      "contributions": [
+        "infra",
+        "data",
+        "tool"
+      ]
     }
   ],
   "contributorsPerLine": 7,
