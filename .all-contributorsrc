@@ -60,7 +60,22 @@
         "data",
         "userTesting"
       ]
+    },
+    {
+      "login": "hyruuk",
+      "name": "Yann Harel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/36450529?v=4",
+      "profile": "https://github.com/hyruuk",
+      "contributions": [
+        "design",
+        "ideas",
+        "review",
+        "bug",
+        "content",
+        "talk"
+      ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "commitConvention": "angular"
 }
