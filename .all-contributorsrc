@@ -87,6 +87,7 @@
       ]
     },
     {
+<<<<<<< HEAD
       "login": "FrancoisPgm",
       "name": "François Paugam",
       "avatar_url": "https://avatars.githubusercontent.com/u/35327799?v=4",
@@ -101,6 +102,12 @@
       "name": "Pravish Sainath",
       "avatar_url": "https://avatars.githubusercontent.com/u/13696562?v=4",
       "profile": "https://github.com/pravishsainath",
+=======
+      "login": "sangfrois",
+      "name": "François Lespinasse",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38385719?v=4",
+      "profile": "https://github.com/sangfrois",
+>>>>>>> github/all-contributors/add-sangfrois
       "contributions": [
         "data"
       ]
