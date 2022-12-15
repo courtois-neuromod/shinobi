@@ -341,8 +341,8 @@ def main():
                         bk2_files = events_dataframe['stim_file'].values.tolist()
                         runvars = []
                         for bk2_file in bk2_files:
-                            print("Adding : " + bk2_file)
                             if bk2_file is not np.nan:
+                                print("Adding : " + bk2_file)
                                 bk2_fname = op.join(DATA_PATH, bk2_file)
                                 if op.exists(bk2_fname):
                                     repvars = extract_variables(bk2_fname)
