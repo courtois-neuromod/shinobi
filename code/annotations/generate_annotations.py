@@ -332,9 +332,9 @@ def main():
     for root, folder, files in os.walk(DATA_PATH):
         for file in files:
             if "events.tsv" in file and not "annotated" in file:
+                run_events_file = op.join(root, file)
                 events_annotated_fname = run_events_file.replace("_events.", "_annotated_events.")
                 if not op.isfile(events_annotated_fname):
-                    run_events_file = op.join(root, file)
                     print(f"Processing : {file}")
                     events_dataframe = pd.read_table(run_events_file)
                     bk2_files = events_dataframe['stim_file'].values.tolist()
