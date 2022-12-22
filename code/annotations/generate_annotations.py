@@ -355,6 +355,9 @@ def main():
                             runvars.append({})
                     events_df_annotated = create_runevents(runvars, events_dataframe)
                     events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
+                    events_df_annotated.replace({'level': {'1-0': '1',
+                                                           '4-1': '4',
+                                                           '5-0': '5'}}, inplace = True)
                     events_df_annotated.to_csv(events_annotated_fname, sep="\t")
                     print("Done.")
     
