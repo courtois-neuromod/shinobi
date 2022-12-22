@@ -344,7 +344,7 @@ def main():
                     bk2_files = events_dataframe['stim_file'].values.tolist()
                     runvars = []
                     for bk2_file in bk2_files:
-                        if bk2_file != "Missing file" or not np.isnan(bk2_file):
+                        if bk2_file != "Missing file" or type(bk2_file) != float:
                             print("Adding : " + bk2_file)
                             bk2_fname = op.join(DATA_PATH, bk2_file)
                             if op.exists(bk2_fname):
