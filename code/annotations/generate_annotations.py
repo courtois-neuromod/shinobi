@@ -131,29 +131,32 @@ def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_hea
     """
     all_df = [events_dataframe]
     for idx, repvars in enumerate(runvars):
+        
         repvars['rep_onset'] = [events_dataframe['onset'][idx]]
         repvars['rep_duration'] = [events_dataframe['duration'][idx]]
-        ACTIONS = repvars["actions"]
-        if get_actions:
-            for act in ACTIONS:
-                temp_df = generate_key_events(repvars, act, FS=FS)
+
+        if "actions" in repvars.keys():
+            if get_actions:
+                ACTIONS = repvars["actions"]
+                for act in ACTIONS:
+                    temp_df = generate_key_events(repvars, act, FS=FS)
+                    temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
+                    all_df.append(temp_df)
+
+            if get_healthloss:
+                temp_df = generate_healthloss_events(repvars, FS=FS, dur=0.1)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
                 all_df.append(temp_df)
 
-        if get_healthloss:
-            temp_df = generate_healthloss_events(repvars, FS=FS, dur=0.1)
-            temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-            all_df.append(temp_df)
-
-        if get_kills:
-            temp_df = generate_kill_events(repvars, FS=FS, dur=0.1)
-            temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-            all_df.append(temp_df)
-        
-        if get_frames:
-            temp_df = generate_frame_events(repvars, FS=60)
-            temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-            all_df.append(temp_df)
+            if get_kills:
+                temp_df = generate_kill_events(repvars, FS=FS, dur=0.1)
+                temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
+                all_df.append(temp_df)
+            
+            if get_frames:
+                temp_df = generate_frame_events(repvars, FS=60)
+                temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
+                all_df.append(temp_df)
     try:
         events_df = pd.concat(all_df).sort_values(by='onset').reset_index(drop=True)
     except ValueError:
@@ -335,22 +338,25 @@ def main():
                 if "events.tsv" in file and not "annotated" in file:
                     run_events_file = op.join(root, file)
                     events_annotated_fname = run_events_file.replace("_events.", "_annotated_events.")
-                    if not op.isfile(events_annotated_fname):
-                        print(f"Processing : {file}")
-                        events_dataframe = pd.read_table(run_events_file)
-                        bk2_files = events_dataframe['stim_file'].values.tolist()
-                        runvars = []
-                        for bk2_file in bk2_files:
-                            if bk2_file is not np.nan:
-                                print("Adding : " + bk2_file)
-                                bk2_fname = op.join(DATA_PATH, bk2_file)
-                                if op.exists(bk2_fname):
-                                    repvars = extract_variables(bk2_fname)
-                                    runvars.append(repvars)
-                        events_df_annotated = create_runevents(runvars, events_dataframe)
-                        events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
-                        events_df_annotated.to_csv(events_annotated_fname, sep="\t")
-                        print("Done.")
+                    #if not op.isfile(events_annotated_fname):
+                    print(f"Processing : {file}")
+                    events_dataframe = pd.read_table(run_events_file)
+                    bk2_files = events_dataframe['stim_file'].values.tolist()
+                    runvars = []
+                    for bk2_file in bk2_files:
+                        if bk2_file != "Missing file":
+                            print("Adding : " + bk2_file)
+                            bk2_fname = op.join(DATA_PATH, bk2_file)
+                            if op.exists(bk2_fname):
+                                repvars = extract_variables(bk2_fname)
+                                runvars.append(repvars)
+                        else:
+                            print("Missing file, skipping")
+                            runvars.append({})
+                    events_df_annotated = create_runevents(runvars, events_dataframe)
+                    events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
+                    events_df_annotated.to_csv(events_annotated_fname, sep="\t")
+                    print("Done.")
     
 
 if __name__ == "__main__":
