@@ -337,7 +337,7 @@ def main():
             for file in files:
                 if "events.tsv" in file and not "annotated" in file:
                     run_events_file = op.join(root, file)
-                    events_annotated_fname = run_events_file.replace("_events.", "_annotated_events.")
+                    events_annotated_fname = run_events_file.replace("_events.", "_desc-annotated_events.")
                     #if not op.isfile(events_annotated_fname):
                     print(f"Processing : {file}")
                     events_dataframe = pd.read_table(run_events_file)
@@ -354,10 +354,17 @@ def main():
                             print("Missing file, skipping")
                             runvars.append({})
                     events_df_annotated = create_runevents(runvars, events_dataframe)
+                    # Correct a few things
+                    for action in ['B', 'A', 'MODE', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'Y', 'X', 'Z']:
+                        events_df_annotated[action].replace({"0":False,
+                                                             "1":True})
                     events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
                     events_df_annotated.replace({'level': {'1-0': '1',
                                                            '4-1': '4',
                                                            '5-0': '5'}}, inplace = True)
+                    events_df_annotated.replace({'trial_type': {'B':'HIT',
+                                                                'C':'JUMP'}}, inplace = True)
+                    # Save
                     events_df_annotated.to_csv(events_annotated_fname, sep="\t")
                     print("Done.")
     
