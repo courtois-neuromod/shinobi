@@ -1,8 +1,6 @@
 # Generate annotations of game events and add them to the events_file
 # Requires gym-retro installed with Shinobi III : Return of the Ninja Master properly integrated
 # NB : currently assumes that the framerate stayed constant at 60fps, which is likely not the case (based on discrepancies in bk2/events durations values)
-# TODO : correct for difference with bk2 timings and make sure they fit within the gym-retro_game event in events.tsv
-# TODO : keypress events are sometimes off by 1 frame (investigate ?)
 
 import retro
 import os
@@ -10,6 +8,11 @@ import os.path as op
 import pandas as pd
 import numpy as np
 import argparse
+from torch import Tensor
+from PIL import Image
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -20,60 +23,98 @@ parser.add_argument(
     help="Data path to look for events.tsv and .bk2 files. Should be the root of the shinobi dataset.",
 )
 
-def extract_variables(filepath):
-    """Runs the logfile to generate a dict that saves all the variables indexed
-    in the data.json file.
 
-    Parameters
-    ----------
-    filepath : str
-        The path to the .bk2 file location
-
-    Returns
-    -------
-    repetition_variables : dict
-        A Python dict with one entry per variable. In each entry, a list
-        containing the state of a variable at each frame across a whole
-        repetition.
+def replay_bk2(path, emulator, size=None, reward=None, skip_first_step=True):
+    """Replay a bk2 file and return the images as a numpy array
+    of shape (n_frames, channels=3, width, height), actions a list of list of bool,
+    rewards as a list of floats, done a list of bool, info a list of dict.
     """
-    # Grab some info
-    split_filepath = filepath.split("/")
-    split_filename = split_filepath[-1].split("_")
-    level = split_filename[-2][-1]
-    
-    # Instantiate emulator
-    env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis", state=f"Level{level}")
-    key_log = retro.Movie(filepath)
-    env.reset()
+    movie = retro.Movie(path)
+    emulator.initial_state = movie.get_state()
+    emulator.reset()
+    images = []
+    info = []
+    done = []
+    rewards = []
+    actions = []
 
-    # Init variables dict
+    if skip_first_step:
+        movie.step()
+    while movie.step():
+        keys = []
+        for p in range(movie.players):
+            for i in range(emulator.num_buttons):
+                keys.append(movie.get_key(i, p))
+        actions.append(keys)
+        obs, _rew, _done, _info = emulator.step(keys)
+        if size is not None:
+            obs = resize(obs, size)
+        images.append(obs)
+        info.append(_info)
+        if reward is None:
+            rewards.append(_rew)
+        else:
+            rewards.apend(_info[reward])
+        done.append(_done)
+    return np.moveaxis(np.array(images), -1, 1), actions, rewards, done, info
+
+def images_from_array(array):
+    if isinstance(array, Tensor):
+        array = array.numpy()
+    mode = "P" if (array.shape[1] == 1 or len(array.shape) == 3) else "RGB"
+    if array.shape[1] == 1:
+        array = np.squeeze(array, axis=1)
+    if mode == "RGB":
+        array = np.moveaxis(array, 1, 3)
+    if array.min() < 0 or array.max() < 1:  # if pixel values in [-0.5, 0.5]
+        array = 255 * (array + 0.5)
+
+    images = [Image.fromarray(np.uint8(arr), mode) for arr in array]
+    return images
+    
+def save_GIF(array, path, duration=200, optimize=False):
+    """Save a GIF from an array of shape (n_frames, channels, width, height),
+    also accepts (n_frames, width, height) for grey levels.
+    """
+    assert path[-4:] == ".gif"
+    images = images_from_array(array[0:-1:4])
+    images[0].save(
+        path, save_all=True, append_images=images[1:], optimize=optimize, loop=0, duration=duration)
+
+def make_replay(bk2_fpath, skip_first_step, save_gif=True, duration=10):
+    # Instantiate emulator
+    env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis")
+    frames, actions, rewards, done, info = replay_bk2(bk2_fpath, env, skip_first_step=skip_first_step)
+    repetition_variables = reformat_info(info, actions, env, bk2_fpath)
+    if save_gif:
+        save_GIF(frames, bk2_fpath.replace(".bk2", ".gif"), duration=duration, optimize=False)
+
+    env.close()
+    return repetition_variables
+
+def reformat_info(info, actions, env, bk2_fpath):
+    """
+    Reformats the info structure for a dictionnary structure containing the relevant info.
+    """
     repetition_variables = {}
-    repetition_variables["filename"] = filepath
-    repetition_variables["level"] = level
+    repetition_variables["filename"] = bk2_fpath
+    repetition_variables["level"] = bk2_fpath.split("/")[-1].split("_")[-2]
+    repetition_variables["subject"] = bk2_fpath.split("/")[-1].split("_")[0]
+    repetition_variables["session"] = bk2_fpath.split("/")[-1].split("_")[1]
+    repetition_variables["repetition"] = bk2_fpath.split("/")[-1].split("_")[-1].split(".")[0]
     repetition_variables["actions"] = env.buttons
 
-    # Run the first step to obtain variable keys
-    _, _, _, frame_variables = env.step([key_log.get_key(i, 0) for i in range(env.num_buttons)])
-
-    # Init all entries
-    for key in frame_variables:
+    for key in info[0].keys():
         repetition_variables[key] = []
-    for action in env.buttons:
-        repetition_variables[action] = []
+    for button in env.buttons:
+        repetition_variables[button] = []
     
-    # Starts accumulating variables states
-    env.reset()
-    while key_log.step():
-        action_list = [key_log.get_key(i, 0) for i in range(env.num_buttons)]
-        _, _, _, frame_variables = env.step(action_list)
-        for key, item in frame_variables.items():
-            repetition_variables[key].append(item)  
-        for idx_action, action in enumerate(env.buttons):
-            repetition_variables[action].append(action_list[idx_action])
-    env.close()
-
-    # Fix X_player
-    repetition_variables["X_player"] = fix_position_resets(repetition_variables["X_player"])
+    for frame_idx, frame_info in enumerate(info):
+        for key in frame_info.keys():
+            repetition_variables[key].append(frame_info[key])
+        for button_idx, button in enumerate(env.buttons):
+            repetition_variables[button].append(actions[frame_idx][button_idx])
+    
     return repetition_variables
 
 def fix_position_resets(X_player):
@@ -323,6 +364,39 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
                                'trial_type':trial_type})
     return events_df
 
+def create_info_dict(repvars):
+    info_dict = {}
+
+    info_dict["duration"] = len(repvars["X_player"])/60
+
+    lives_lost = sum([x for x in np.diff(repvars["lives"], n=1) if x < 0])
+    if lives_lost == 0:
+        cleared = True
+    else:
+        cleared = False
+    info_dict["cleared"] = cleared
+
+    info_dict["end_score"] = repvars["score"][-1]
+
+    diff_health = np.diff(repvars["health"], n=1)
+    try:
+        index_health_loss = list(np.unique(diff_health, return_counts=True)[0]).index(-1)
+        total_health_loss = np.unique(diff_health, return_counts=True)[1][index_health_loss]
+    except Exception as e:
+        print(e)
+        total_health_loss = 0
+    info_dict["total health lost"] = total_health_loss
+
+    diff_shurikens = np.diff(repvars["shurikens"], n=1)
+    try:
+        index_shurikens_loss = list(np.unique(diff_shurikens, return_counts=True)[0]).index(-1)
+        total_shurikens_loss = np.unique(diff_shurikens, return_counts=True)[1][index_shurikens_loss]
+    except Exception as e:
+        total_shurikens_loss = 0
+    info_dict["shurikens used"] = total_shurikens_loss
+    
+    info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
+    return info_dict
 
 def main():
     # Get datapath
@@ -343,21 +417,33 @@ def main():
                     events_dataframe = pd.read_table(run_events_file)
                     bk2_files = events_dataframe['stim_file'].values.tolist()
                     runvars = []
-                    for bk2_file in bk2_files:
+                    for bk2_idx, bk2_file in enumerate(bk2_files):
                         if bk2_file != "Missing file" and type(bk2_file) != float:
                             print("Adding : " + bk2_file)
                             bk2_fname = op.join(DATA_PATH, bk2_file)
-                            if op.exists(bk2_fname):
-                                repvars = extract_variables(bk2_fname)
+                            if op.exists(bk2_file):
+                                #repvars = extract_variables(bk2_fname)
+                                repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
+                                repvars["X_player"] = fix_position_resets(repvars["X_player"])
                                 runvars.append(repvars)
+                                # create json sidecar
+                                info_dict = create_info_dict(repvars)
+                                with open(bk2_file.replace(".bk2", ".json"), "w") as outfile:
+                                    json.dump(info_dict, outfile, default=str)
                         else:
                             print("Missing file, skipping")
                             runvars.append({})
                     events_df_annotated = create_runevents(runvars, events_dataframe)
                     # Correct a few things
-                    for action in ['B', 'A', 'MODE', 'START', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'Y', 'X', 'Z']:
-                        events_df_annotated[action].replace({"0":False,
-                                                             "1":True})
+                    env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis")
+                    actions = env.buttons
+                    env.close()
+                    for action in actions:
+                        try:
+                            events_df_annotated[action].replace({"0":False,
+                                                                "1":True})
+                        except Exception as e:
+                            print(e)
                     events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
                     events_df_annotated.replace({'level': {'1-0': '1',
                                                            '4-1': '4',
