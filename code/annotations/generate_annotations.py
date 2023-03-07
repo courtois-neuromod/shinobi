@@ -394,7 +394,7 @@ def create_info_dict(repvars):
     except Exception as e:
         total_shurikens_loss = 0
     info_dict["shurikens used"] = total_shurikens_loss
-    
+
     info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
     return info_dict
 
@@ -422,7 +422,6 @@ def main():
                             print("Adding : " + bk2_file)
                             bk2_fname = op.join(DATA_PATH, bk2_file)
                             if op.exists(bk2_file):
-                                #repvars = extract_variables(bk2_fname)
                                 repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
                                 repvars["X_player"] = fix_position_resets(repvars["X_player"])
                                 runvars.append(repvars)
