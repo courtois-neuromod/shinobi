@@ -1,1 +1,50 @@
-TODO: Provide description for the dataset -- basic details about the study, possibly pointing to pre-registration (if public or embargoed)
+<!-- vim: syntax=Markdown -->
+# Courtois-NeuroMod: [shinobi subdataset](https://github.com/courtois-neuromod/shinobi)
+
+The [Courtois project on Neural Modelling (Courtois NeuroMod)](https://www.cneuromod.ca/) aims at training artificial neural networks using extensive experimental data on individual human brain activity and behaviour.
+
+Participants played 3 selected levels of *Shinobi III: Return of the Ninja Master*, while functional MRI data was acquired. A extensive description can be found [here](https://docs.cneuromod.ca/en/latest/DATASETS.html#shinobi).
+
+This subdataset is organized following the [brain imaging data structure (BIDS)](https://bids.neuroimaging.io/) (including extensions in development) and contains:
+- [x] [raw neuroimaging data](https://docs.cneuromod.ca/en/latest/MRI.html#functional-sequences)
+- [x] behavioral variables in event files
+  - [x] gamelogs as gym-retro bk2 files
+- [ ] physiological data
+  - [ ] ECG
+  - [ ] pulse (photoplethysmography)
+  - [ ] respiration
+  - [ ] skin conductance (electro-dermal activity)
+- [ ] eyetracking gaze and pupillometry (some seasons/sessions only)
+
+*(unchecked are collected data which have not yet been integrated in the dataset)*
+
+Courtois NeuroMod data are [freely shared with the scientific community](https://docs.cneuromod.ca/en/latest/ACCESS.html) to advance research at the interface of neuroscience and artificial intelligence. Access to to the data is based on a registered access model, see the Courtois NeuroMod website for more information. Redistribution of data outside of the Courtois NeuroMod data bank is prohibited.
+
+
+## Contributors
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://github.com/julieaboyle1"><img src="https://avatars.githubusercontent.com/u/39348727?v=4?s=100" width="100px;" alt="jboyle"/><br /><sub><b>jboyle</b></sub></a><br /><a href="#design-julieaboyle1" title="Design">🎨</a> <a href="#data-julieaboyle1" title="Data">🔣</a> <a href="#projectManagement-julieaboyle1" title="Project Management">📆</a> <a href="https://github.com/courtois-neuromod/shinobi/commits?author=julieaboyle1" title="Documentation">📖</a></td>
+      <td align="center"><a href="http://simexp-lab.org"><img src="https://avatars.githubusercontent.com/u/1670887?v=4?s=100" width="100px;" alt="Pierre Bellec"/><br /><sub><b>Pierre Bellec</b></sub></a><br /><a href="#design-pbellec" title="Design">🎨</a> <a href="https://github.com/courtois-neuromod/shinobi/commits?author=pbellec" title="Documentation">📖</a></td>
+      <td align="center"><a href="https://github.com/emilie-dessureault"><img src="https://avatars.githubusercontent.com/u/61021023?v=4?s=100" width="100px;" alt="emilie-dessureault"/><br /><sub><b>emilie-dessureault</b></sub></a><br /><a href="#data-emilie-dessureault" title="Data">🔣</a> <a href="#projectManagement-emilie-dessureault" title="Project Management">📆</a></td>
+      <td align="center"><a href="https://github.com/bpinsard"><img src="https://avatars.githubusercontent.com/u/1155388?v=4?s=100" width="100px;" alt="Basile"/><br /><sub><b>Basile</b></sub></a><br /><a href="#design-bpinsard" title="Design">🎨</a> <a href="https://github.com/courtois-neuromod/shinobi/commits?author=bpinsard" title="Code">💻</a> <a href="#data-bpinsard" title="Data">🔣</a></td>
+      <td align="center"><a href="https://github.com/bamal"><img src="https://avatars.githubusercontent.com/u/10996072?v=4?s=100" width="100px;" alt="Amal "/><br /><sub><b>Amal </b></sub></a><br /><a href="#data-bamal" title="Data">🔣</a> <a href="#userTesting-bamal" title="User Testing">📓</a></td>
+      <td align="center"><a href="https://github.com/hyruuk"><img src="https://avatars.githubusercontent.com/u/36450529?v=4?s=100" width="100px;" alt="Yann Harel"/><br /><sub><b>Yann Harel</b></sub></a><br /><a href="#design-hyruuk" title="Design">🎨</a> <a href="#ideas-hyruuk" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/courtois-neuromod/shinobi/pulls?q=is%3Apr+reviewed-by%3Ahyruuk" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/courtois-neuromod/shinobi/issues?q=author%3Ahyruuk" title="Bug reports">🐛</a> <a href="#content-hyruuk" title="Content">🖋</a> <a href="#talk-hyruuk" title="Talks">📢</a></td>
+      <td align="center"><a href="https://github.com/cyrand"><img src="https://avatars.githubusercontent.com/u/50246550?v=4?s=100" width="100px;" alt="cyrand"/><br /><sub><b>cyrand</b></sub></a><br /><a href="#infra-cyrand" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#data-cyrand" title="Data">🔣</a> <a href="#tool-cyrand" title="Tools">🔧</a></td>
+    </tr>
+    <tr>
+      <td align="center"><a href="https://github.com/FrancoisPgm"><img src="https://avatars.githubusercontent.com/u/35327799?v=4?s=100" width="100px;" alt="François Paugam"/><br /><sub><b>François Paugam</b></sub></a><br /><a href="#data-FrancoisPgm" title="Data">🔣</a> <a href="https://github.com/courtois-neuromod/shinobi/pulls?q=is%3Apr+reviewed-by%3AFrancoisPgm" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center"><a href="https://github.com/pravishsainath"><img src="https://avatars.githubusercontent.com/u/13696562?v=4?s=100" width="100px;" alt="Pravish Sainath"/><br /><sub><b>Pravish Sainath</b></sub></a><br /><a href="#data-pravishsainath" title="Data">🔣</a></td>
+      <td align="center"><a href="https://github.com/sangfrois"><img src="https://avatars.githubusercontent.com/u/38385719?v=4?s=100" width="100px;" alt="François Lespinasse"/><br /><sub><b>François Lespinasse</b></sub></a><br /><a href="#data-sangfrois" title="Data">🔣</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
