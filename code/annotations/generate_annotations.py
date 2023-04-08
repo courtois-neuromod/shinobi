@@ -276,11 +276,13 @@ def generate_key_events(repvars, key, FS=60):
     presses = [round(i/FS, 3) for i, x in enumerate(diffs) if x == 1]
     releases = [round(i/FS, 3) for i, x in enumerate(diffs) if x == -1]
     onset = presses
+    level = [repvars["level"] for x in onset]
     duration = [round(releases[i] - presses[i], 3) for i in range(len(presses))]
     trial_type = ['{}'.format(key) for i in range(len(presses))]
     events_df = pd.DataFrame(data={'onset':onset,
                                    'duration':duration,
-                                   'trial_type':trial_type})
+                                   'trial_type':trial_type,
+                                   'level':level})
     return events_df
 
 def generate_kill_events(repvars, FS=60, dur=0.1):
