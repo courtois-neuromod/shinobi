@@ -315,11 +315,13 @@ def generate_kill_events(repvars, FS=60, dur=0.1):
     onset = []
     duration = []
     trial_type = []
+    level = []
     for idx, x in enumerate(diff_score):
         if x in [200,300]:
             onset.append(idx/FS)
             duration.append(dur)
             trial_type.append('Kill')
+            level.append(repvars["level"])
 
     #build df
     events_df = pd.DataFrame(data={'onset':onset,
@@ -351,6 +353,7 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
     onset = []
     duration = []
     trial_type = []
+    level = []
     for idx, x in enumerate(diff_health):
         if x < 0:
             onset.append(idx/FS)
@@ -360,10 +363,12 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
             onset.append(idx/FS)
             duration.append(dur)
             trial_type.append('HealthGain')
+        level.append(repvars["level"])
 
     events_df = pd.DataFrame(data={'onset':onset,
                                'duration':duration,
-                               'trial_type':trial_type})
+                               'trial_type':trial_type,
+                               'level':level})
     return events_df
 
 def create_info_dict(repvars):
