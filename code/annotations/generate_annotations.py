@@ -13,6 +13,7 @@ from PIL import Image
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
+from bids_loader.stimuli.game import get_variables_from_replay
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -22,100 +23,6 @@ parser.add_argument(
     type=str,
     help="Data path to look for events.tsv and .bk2 files. Should be the root of the shinobi dataset.",
 )
-
-
-def replay_bk2(path, emulator, size=None, reward=None, skip_first_step=True):
-    """Replay a bk2 file and return the images as a numpy array
-    of shape (n_frames, channels=3, width, height), actions a list of list of bool,
-    rewards as a list of floats, done a list of bool, info a list of dict.
-    """
-    movie = retro.Movie(path)
-    emulator.initial_state = movie.get_state()
-    emulator.reset()
-    images = []
-    info = []
-    done = []
-    rewards = []
-    actions = []
-
-    if skip_first_step:
-        movie.step()
-    while movie.step():
-        keys = []
-        for p in range(movie.players):
-            for i in range(emulator.num_buttons):
-                keys.append(movie.get_key(i, p))
-        actions.append(keys)
-        obs, _rew, _done, _info = emulator.step(keys)
-        if size is not None:
-            obs = resize(obs, size)
-        images.append(obs)
-        info.append(_info)
-        if reward is None:
-            rewards.append(_rew)
-        else:
-            rewards.apend(_info[reward])
-        done.append(_done)
-    return np.moveaxis(np.array(images), -1, 1), actions, rewards, done, info
-
-def images_from_array(array):
-    if isinstance(array, Tensor):
-        array = array.numpy()
-    mode = "P" if (array.shape[1] == 1 or len(array.shape) == 3) else "RGB"
-    if array.shape[1] == 1:
-        array = np.squeeze(array, axis=1)
-    if mode == "RGB":
-        array = np.moveaxis(array, 1, 3)
-    if array.min() < 0 or array.max() < 1:  # if pixel values in [-0.5, 0.5]
-        array = 255 * (array + 0.5)
-
-    images = [Image.fromarray(np.uint8(arr), mode) for arr in array]
-    return images
-    
-def save_GIF(array, path, duration=200, optimize=False):
-    """Save a GIF from an array of shape (n_frames, channels, width, height),
-    also accepts (n_frames, width, height) for grey levels.
-    """
-    assert path[-4:] == ".gif"
-    images = images_from_array(array[0:-1:4])
-    images[0].save(
-        path, save_all=True, append_images=images[1:], optimize=optimize, loop=0, duration=duration)
-
-def make_replay(bk2_fpath, skip_first_step, save_gif=True, duration=10):
-    # Instantiate emulator
-    env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis")
-    frames, actions, rewards, done, info = replay_bk2(bk2_fpath, env, skip_first_step=skip_first_step)
-    repetition_variables = reformat_info(info, actions, env, bk2_fpath)
-    if save_gif:
-        save_GIF(frames, bk2_fpath.replace(".bk2", ".gif"), duration=duration, optimize=False)
-
-    env.close()
-    return repetition_variables
-
-def reformat_info(info, actions, env, bk2_fpath):
-    """
-    Reformats the info structure for a dictionnary structure containing the relevant info.
-    """
-    repetition_variables = {}
-    repetition_variables["filename"] = bk2_fpath
-    repetition_variables["level"] = bk2_fpath.split("/")[-1].split("_")[-2]
-    repetition_variables["subject"] = bk2_fpath.split("/")[-1].split("_")[0]
-    repetition_variables["session"] = bk2_fpath.split("/")[-1].split("_")[1]
-    repetition_variables["repetition"] = bk2_fpath.split("/")[-1].split("_")[-1].split(".")[0]
-    repetition_variables["actions"] = env.buttons
-
-    for key in info[0].keys():
-        repetition_variables[key] = []
-    for button in env.buttons:
-        repetition_variables[button] = []
-    
-    for frame_idx, frame_info in enumerate(info):
-        for key in frame_info.keys():
-            repetition_variables[key].append(frame_info[key])
-        for button_idx, button in enumerate(env.buttons):
-            repetition_variables[button].append(actions[frame_idx][button_idx])
-    
-    return repetition_variables
 
 def fix_position_resets(X_player):
     """Sometimes X_player resets to 0 but the player's position should keep
@@ -309,7 +216,7 @@ def generate_kill_events(repvars, FS=60, dur=0.1):
         An events DataFrame in BIDS-compatible format containing the
         kill events.
     """
-    instant_score = repvars['score_Instant']
+    instant_score = repvars['instantScore']
     diff_score = np.diff(instant_score, n=1)
 
     onset = []
@@ -326,7 +233,8 @@ def generate_kill_events(repvars, FS=60, dur=0.1):
     #build df
     events_df = pd.DataFrame(data={'onset':onset,
                                'duration':duration,
-                               'trial_type':trial_type})
+                               'trial_type':trial_type,
+                               'level':level})
     return events_df
 
 def generate_healthloss_events(repvars, FS=60, dur=0.1):
@@ -355,15 +263,17 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
     trial_type = []
     level = []
     for idx, x in enumerate(diff_health):
+        
         if x < 0:
             onset.append(idx/FS)
             duration.append(dur)
             trial_type.append('HealthLoss')
+            level.append(repvars["level"])
         if x > 0:
             onset.append(idx/FS)
             duration.append(dur)
             trial_type.append('HealthGain')
-        level.append(repvars["level"])
+            level.append(repvars["level"])
 
     events_df = pd.DataFrame(data={'onset':onset,
                                'duration':duration,
@@ -429,7 +339,8 @@ def main():
                             print("Adding : " + bk2_file)
                             bk2_fname = op.join(DATA_PATH, bk2_file)
                             if op.exists(bk2_file):
-                                repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
+                                #repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
+                                repvars = get_variables_from_replay(bk2_file, skip_first_step=bk2_idx==0, save_gif=True, game=None, inttype=retro.data.Integrations.STABLE)
                                 repvars["X_player"] = fix_position_resets(repvars["X_player"])
                                 runvars.append(repvars)
                                 # create json sidecar
