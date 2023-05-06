@@ -329,51 +329,51 @@ def main():
                 if "events.tsv" in file and not "annotated" in file:
                     run_events_file = op.join(root, file)
                     events_annotated_fname = run_events_file.replace("_events.", "_desc-annotated_events.")
-                    #if not op.isfile(events_annotated_fname):
-                    print(f"Processing : {file}")
-                    events_dataframe = pd.read_table(run_events_file)
-                    bk2_files = events_dataframe['stim_file'].values.tolist()
-                    runvars = []
-                    for bk2_idx, bk2_file in enumerate(bk2_files):
-                        if bk2_file != "Missing file" and type(bk2_file) != float:
-                            print("Adding : " + bk2_file)
-                            bk2_fname = op.join(DATA_PATH, bk2_file)
-                            if op.exists(bk2_file):
-                                #repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
-                                repvars = get_variables_from_replay(bk2_file, skip_first_step=bk2_idx==0, save_gif=True, game=None, inttype=retro.data.Integrations.STABLE)
-                                repvars["X_player"] = fix_position_resets(repvars["X_player"])
-                                runvars.append(repvars)
-                                # create json sidecar
-                                info_dict = create_info_dict(repvars)
-                                with open(bk2_file.replace(".bk2", ".json"), "w") as outfile:
-                                    json.dump(info_dict, outfile, default=str)
-                        else:
-                            print("Missing file, skipping")
-                            runvars.append({})
-                    events_df_annotated = create_runevents(runvars, events_dataframe)
-                    # Correct a few things
-                    env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis")
-                    actions = env.buttons
-                    env.close()
-                    for action in actions:
+                    if not op.isfile(events_annotated_fname):
+                        print(f"Processing : {file}")
+                        events_dataframe = pd.read_table(run_events_file)
+                        bk2_files = events_dataframe['stim_file'].values.tolist()
+                        runvars = []
+                        for bk2_idx, bk2_file in enumerate(bk2_files):
+                            if bk2_file != "Missing file" and type(bk2_file) != float:
+                                print("Adding : " + bk2_file)
+                                bk2_fname = op.join(DATA_PATH, bk2_file)
+                                if op.exists(bk2_file):
+                                    #repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
+                                    repvars = get_variables_from_replay(bk2_file, skip_first_step=bk2_idx==0, save_gif=True, game=None, inttype=retro.data.Integrations.STABLE)
+                                    repvars["X_player"] = fix_position_resets(repvars["X_player"])
+                                    runvars.append(repvars)
+                                    # create json sidecar
+                                    info_dict = create_info_dict(repvars)
+                                    with open(bk2_file.replace(".bk2", ".json"), "w") as outfile:
+                                        json.dump(info_dict, outfile, default=str)
+                            else:
+                                print("Missing file, skipping")
+                                runvars.append({})
+                        events_df_annotated = create_runevents(runvars, events_dataframe)
+                        # Correct a few things
+                        env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis")
+                        actions = env.buttons
+                        env.close()
+                        for action in actions:
+                            try:
+                                events_df_annotated[action].replace({"0":False,
+                                                                    "1":True})
+                            except Exception as e:
+                                print(e)
                         try:
-                            events_df_annotated[action].replace({"0":False,
-                                                                "1":True})
+                            events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
                         except Exception as e:
                             print(e)
-                    try:
-                        events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
-                    except Exception as e:
-                        print(e)
-                    events_df_annotated.replace({'level': {'1-0': 'level-1',
-                                                           '4-1': 'level-4',
-                                                           '5-0': 'level-5'}}, inplace = True)
-                    events_df_annotated.replace({'trial_type': {'B':'HIT',
-                                                                'C':'JUMP'}}, inplace = True)
-                    # Save
-                    events_df_annotated.to_csv(events_annotated_fname, sep="\t")
-                    print("Done.")
-    
+                        events_df_annotated.replace({'level': {'1-0': 'level-1',
+                                                            '4-1': 'level-4',
+                                                            '5-0': 'level-5'}}, inplace = True)
+                        events_df_annotated.replace({'trial_type': {'B':'HIT',
+                                                                    'C':'JUMP'}}, inplace = True)
+                        # Save
+                        events_df_annotated.to_csv(events_annotated_fname, sep="\t")
+                        print("Done.")
+
 
 if __name__ == "__main__":
     main()
