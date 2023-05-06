@@ -361,7 +361,10 @@ def main():
                                                                 "1":True})
                         except Exception as e:
                             print(e)
-                    events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
+                    try:
+                        events_df_annotated = events_df_annotated.drop(["filename", "actions", "rep_onset", "rep_duration"], axis=1)
+                    except Exception as e:
+                        print(e)
                     events_df_annotated.replace({'level': {'1-0': 'level-1',
                                                            '4-1': 'level-4',
                                                            '5-0': 'level-5'}}, inplace = True)
