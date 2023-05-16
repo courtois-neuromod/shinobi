@@ -1,6 +1,6 @@
 **/anat/*localizer*
 **/anat/*scout*
 **/*__dup*
-*/*/gamelogs/*.bk2
+*/*/gamelogs/**
 tests/
 cleaning/
