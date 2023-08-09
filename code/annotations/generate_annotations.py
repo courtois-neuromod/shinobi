@@ -14,6 +14,7 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
 from bids_loader.stimuli.game import get_variables_from_replay
+from shinobi_behav.features.features import fix_position_resets
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -24,35 +25,21 @@ parser.add_argument(
     help="Data path to look for events.tsv and .bk2 files. Should be the root of the shinobi dataset.",
 )
 
-def fix_position_resets(X_player):
-    """Sometimes X_player resets to 0 but the player's position should keep
-    increasing.
-    This fixes it and makes sure that X_player is continuous. If not, the
-    values after the jump are corrected.
-
-    Parameters
-    ----------
-    X_player : list
-        List of raw positions at each timeframe from one repetition.
-
-    Returns
-    -------
-    list
-        List of lists of fixed (continuous) positions. One per repetition.
-
+def load_max_pos(level, dataset_info_path):
     """
+    Load the maximum X position for a given level from the dataset_info.json file.
 
-    fixed_X_player = []
-    raw_X_player = X_player
-    fix = 0  # keeps trace of the shift
-    fixed_X_player.append(raw_X_player[0])  # add first frame
-    for i in range(1, len(raw_X_player) - 1):  # ignore first and last frames
-        if raw_X_player[i - 1] - raw_X_player[i] > 100:
-            fix += raw_X_player[i - 1] - raw_X_player[i]
-        fixed_X_player.append(raw_X_player[i] + fix)
-    fixed_X_player.append(fixed_X_player[-1]) # re-add the last frame for consistency
-    return fixed_X_player
+    Args:
+        level (int): The level for which to load the maximum X position.
+        path_to_data (str, optional): The path to the data directory. Defaults to shinobi_behav.DATA_PATH.
 
+    Returns:
+        float: The maximum X position for the given level.
+    """
+    with open(dataset_info_path, "r") as f:
+        dataset_info = json.load(f)
+    max_pos = dataset_info["Maximum X position"][level]
+    return max_pos
 
 def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_healthloss=True, get_kills=True, get_frames=True):
     """Create a BIDS compatible events dataframe from game variables and start/duration info of repetitions
@@ -281,20 +268,46 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
                                'level':level})
     return events_df
 
-def create_info_dict(repvars):
+def create_info_dict(repvars, dataset_info_path):
+    """
+    Creates a dictionary containing information about a replay.
+
+    Parameters:
+    repvars (dict): A dictionary containing replay variables.
+
+    Returns:
+    dict: A dictionary containing information about the replay, including the subject ID, session ID, repetition level,
+    whether the level was cleared, the duration of the repetition, the final score, the amount of health lost, the percent
+    complete, and whether the repetition was fake or not.
+    """
+    # Init dict
     info_dict = {}
 
-    info_dict["duration"] = len(repvars["X_player"])/60
+    # Add subject ID
+    replayfile = repvars["filename"]
+    info_dict["SubjectID"] = replayfile.split("/")[-1].split("_")[0]
 
+    # Add session ID
+    info_dict["SessionID"] = replayfile.split("/")[-1].split("_")[1]
+
+    # Add repetition level
+    info_dict["Level"] = replayfile.split("/")[-1].split("_")[4]
+
+    # Add cleared
     lives_lost = sum([x for x in np.diff(repvars["lives"], n=1) if x < 0])
     if lives_lost == 0:
         cleared = True
     else:
         cleared = False
-    info_dict["cleared"] = cleared
+    info_dict["Cleared"] = cleared
 
-    info_dict["end_score"] = repvars["score"][-1]
+    # Add repetition duration
+    info_dict["Duration"] = len(repvars["X_player"])/60
 
+    # Add final score (performance)
+    info_dict["FinalScore"] = repvars["score"][-1]
+
+    # Add amount of health lost (performance)
     diff_health = np.diff(repvars["health"], n=1)
     try:
         index_health_loss = list(np.unique(diff_health, return_counts=True)[0]).index(-1)
@@ -302,17 +315,23 @@ def create_info_dict(repvars):
     except Exception as e:
         print(e)
         total_health_loss = 0
-    info_dict["total health lost"] = total_health_loss
+    info_dict["TotalHealthLost"] = total_health_loss
 
-    diff_shurikens = np.diff(repvars["shurikens"], n=1)
-    try:
-        index_shurikens_loss = list(np.unique(diff_shurikens, return_counts=True)[0]).index(-1)
-        total_shurikens_loss = np.unique(diff_shurikens, return_counts=True)[1][index_shurikens_loss]
-    except Exception as e:
-        total_shurikens_loss = 0
-    info_dict["shurikens used"] = total_shurikens_loss
+    # Add percent complete
+    max_pos = load_max_pos(info_dict['Level'], dataset_info_path)
+    end_of_level = max_pos - 300 # We assume the level is complete is the player reaches max_pos - 300
+    x_pos_clean = fix_position_resets([repvars])[0]
+    percent_complete = x_pos_clean[-1]/end_of_level*100
+    info_dict["PercentComplete"] = percent_complete
 
-    info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
+    # Add if fakerep
+    if info_dict["FinalScore"] < 200:
+        fakerep = True
+    else:
+        fakerep = False
+
+    info_dict["FakeRep"] = fakerep
+
     return info_dict
 
 def main():
@@ -321,7 +340,7 @@ def main():
     DATA_PATH = args.datapath
     if DATA_PATH == ".":
         print("No data path specified. Searching files in this folder.")
-
+    dataset_info_path = op.join(DATA_PATH, ".." ,"shinobi_training", "code", "dataset_info.json")
     # Process each file
     for root, folder, files in os.walk(DATA_PATH):
         if not "sourcedata" in root:
@@ -338,14 +357,14 @@ def main():
                             if bk2_file != "Missing file" and type(bk2_file) != float:
                                 print("Adding : " + bk2_file)
                                 bk2_fname = op.join(DATA_PATH, bk2_file)
-                                if op.exists(bk2_file):
+                                if op.exists(bk2_fname):
                                     #repvars = make_replay(bk2_file, skip_first_step=bk2_idx==0)
-                                    repvars = get_variables_from_replay(bk2_file, skip_first_step=bk2_idx==0, save_gif=True, game=None, inttype=retro.data.Integrations.STABLE)
-                                    repvars["X_player"] = fix_position_resets(repvars["X_player"])
+                                    repvars = get_variables_from_replay(bk2_fname, skip_first_step=bk2_idx==0, save_gif=False, game=None, inttype=retro.data.Integrations.STABLE)
+                                    repvars["X_player"] = fix_position_resets([repvars])[0]
                                     runvars.append(repvars)
                                     # create json sidecar
-                                    info_dict = create_info_dict(repvars)
-                                    with open(bk2_file.replace(".bk2", ".json"), "w") as outfile:
+                                    info_dict = create_info_dict(repvars, dataset_info_path)
+                                    with open(bk2_fname.replace(".bk2", ".json"), "w") as outfile:
                                         json.dump(info_dict, outfile, default=str)
                             else:
                                 print("Missing file, skipping")
