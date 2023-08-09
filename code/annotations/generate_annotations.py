@@ -369,7 +369,7 @@ def main():
                             else:
                                 print("Missing file, skipping")
                                 runvars.append({})
-                        events_df_annotated = create_runevents(runvars, events_dataframe)
+                        events_df_annotated = create_runevents(runvars, events_dataframe, get_frames=False)
                         # Correct a few things
                         env = retro.make("ShinobiIIIReturnOfTheNinjaMaster-Genesis")
                         actions = env.buttons
