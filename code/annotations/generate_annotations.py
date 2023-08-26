@@ -79,12 +79,12 @@ def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_hea
                     all_df.append(temp_df)
 
             if get_healthloss:
-                temp_df = generate_healthloss_events(repvars, FS=FS, dur=0.5)
+                temp_df = generate_healthloss_events(repvars, FS=FS, dur=0.1)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
                 all_df.append(temp_df)
 
             if get_kills:
-                temp_df = generate_kill_events(repvars, FS=FS, dur=0.5)
+                temp_df = generate_kill_events(repvars, FS=FS, dur=0.1)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
                 all_df.append(temp_df)
             
