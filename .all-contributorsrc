@@ -95,8 +95,8 @@
         "data",
         "review"
         ]
-      },
-      {
+    },
+    {
       "login": "pravishsainath",
       "name": "Pravish Sainath",
       "avatar_url": "https://avatars.githubusercontent.com/u/13696562?v=4",
@@ -104,7 +104,8 @@
       "contributions": [
         "data"
       ]
-      },
+    },
+    {
       "login": "sangfrois",
       "name": "François Lespinasse",
       "avatar_url": "https://avatars.githubusercontent.com/u/38385719?v=4",
@@ -112,7 +113,7 @@
       "contributions": [
         "data"
       ]
-      }
+    }
   ],
   "contributorsPerLine": 7,
   "commitConvention": "angular"
