@@ -87,7 +87,6 @@
       ]
     },
     {
-<<<<<<< HEAD
       "login": "FrancoisPgm",
       "name": "François Paugam",
       "avatar_url": "https://avatars.githubusercontent.com/u/35327799?v=4",
@@ -95,24 +94,37 @@
       "contributions": [
         "data",
         "review"
-        ]
-      },
-      {
+      ]
+    },
+    {
       "login": "pravishsainath",
       "name": "Pravish Sainath",
       "avatar_url": "https://avatars.githubusercontent.com/u/13696562?v=4",
       "profile": "https://github.com/pravishsainath",
-=======
+      "contributions": [
+        "data"
+      ]
+    },
+    {
       "login": "sangfrois",
       "name": "François Lespinasse",
       "avatar_url": "https://avatars.githubusercontent.com/u/38385719?v=4",
       "profile": "https://github.com/sangfrois",
->>>>>>> github/all-contributors/add-sangfrois
+      "contributions": [
+        "data"
+      ]
+    },
+    {
+      "login": "me-pic",
+      "name": "Marie-Eve Picard",
+      "avatar_url": "https://avatars.githubusercontent.com/u/77584086?v=4",
+      "profile": "https://github.com/me-pic",
       "contributions": [
         "data"
       ]
     }
   ],
   "contributorsPerLine": 7,
-  "commitConvention": "angular"
+  "commitConvention": "angular",
+  "commitType": "docs"
 }
