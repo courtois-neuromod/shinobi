@@ -13,3 +13,4 @@
 *_events.tsv annex.largefiles=anything
 .bidsignore
 *.git annex.largefiles=anything
+.github/** annex.largefiles=nothing
