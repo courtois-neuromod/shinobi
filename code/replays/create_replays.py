@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 This script is used to generate JSON sidecar files (and optionally additional files)
 and playback videos for the mario dataset.
@@ -32,6 +31,79 @@ from cneuromod_vg_utils.psychophysics import (
     audio_envelope_per_frame,
 )
 
+def fix_position_resets(X_player):
+    """Sometimes X_player resets to 0 but the player's position should keep
+    increasing.
+    This fixes it and makes sure that X_player is continuous. If not, the
+    values after the jump are corrected.
+
+    Parameters
+    ----------
+    X_player : list
+        List of raw positions at each timeframe from one repetition.
+
+    Returns
+    -------
+    list
+        List of lists of fixed (continuous) positions. One per repetition.
+
+    """
+
+    fixed_X_player = []
+    raw_X_player = X_player
+    fix = 0  # keeps trace of the shift
+    fixed_X_player.append(raw_X_player[0])  # add first frame
+    for i in range(1, len(raw_X_player) - 1):  # ignore first and last frames
+        if raw_X_player[i - 1] - raw_X_player[i] > 100:
+            fix += raw_X_player[i - 1] - raw_X_player[i]
+        fixed_X_player.append(raw_X_player[i] + fix)
+    fixed_X_player.append(fixed_X_player[-1]) # re-add the last frame for consistency
+    return fixed_X_player
+
+def generate_kill_events(repvars, FS=60, dur=0.1):
+    """Create a BIDS compatible events dataframe containing kill events,
+    based on a sudden increase of score.
+    + 200 pts : basic enemies (all levels)
+    + 300 pts : mortars and machineguns (lvl 5)
+    + 400 pts : cauldron-heads (level 1)
+    + 500 pts : anti-riot cop (lvl 5) ; hovering ninja (lvl 4)
+
+
+    Parameters
+    ----------
+    repvars : list
+        A dict containing all the variables of a single repetition.
+    FS : int
+        The sampling rate of the .bk2 file
+    min_dur : float
+        Minimal duration of a kill segment, defaults to 1 (sec)
+
+    Returns
+    -------
+    events_df :
+        An events DataFrame in BIDS-compatible format containing the
+        kill events.
+    """
+    instant_score = repvars['instantScore']
+    diff_score = np.diff(instant_score, n=1)
+
+    onset = []
+    duration = []
+    trial_type = []
+    level = []
+    for idx, x in enumerate(diff_score):
+        if x in [200,300]:
+            onset.append(idx/FS)
+            duration.append(dur)
+            trial_type.append('Kill')
+            level.append(repvars["level"])
+
+    #build df
+    events_df = pd.DataFrame(data={'onset':onset,
+                               'duration':duration,
+                               'trial_type':trial_type,
+                               'level':level})
+    return events_df
 
 def get_passage_order(bk2_df):
     """
@@ -60,25 +132,39 @@ def get_passage_order(bk2_df):
     bk2_df = bk2_df.sort_values(["subject", "global_idx"])
     return bk2_df
 
-def create_sidecar_dict(repetition_variables):
-    sidecar_dict = {}
-    sidecar_dict["Subject"] = repetition_variables["subject"]
-    sidecar_dict["World"] = repetition_variables["level"][1]
-    sidecar_dict["Level"] = repetition_variables["level"][-1]
-    sidecar_dict["Duration"] = len(repetition_variables["score"]) / 60
-    # sidecar_dict["Terminated"] = repetition_variables["terminate"][-1] == True
-    if repetition_variables["player_y_screen"][-1] > 1:
-        cleared = False
-    elif repetition_variables["lives"][-1] == -1:
-        cleared = False
-    elif repetition_variables["player_state"][-1] == 6:
-        cleared = False
-    elif repetition_variables["player_state"][-1] == 11:
-        cleared = False
-    else:
-        cleared = True
-    return sidecar_dict
+def create_sidecar_dict(repvars):
+    info_dict = {}
 
+    info_dict["duration"] = len(repvars["X_player"])/60
+
+    lives_lost = sum([x for x in np.diff(repvars["lives"], n=1) if x < 0])
+    if lives_lost == 0:
+        cleared = True
+    else:
+        cleared = False
+    info_dict["cleared"] = cleared
+
+    info_dict["end_score"] = repvars["score"][-1]
+
+    diff_health = np.diff(repvars["health"], n=1)
+    try:
+        index_health_loss = list(np.unique(diff_health, return_counts=True)[0]).index(-1)
+        total_health_loss = np.unique(diff_health, return_counts=True)[1][index_health_loss]
+    except Exception as e:
+        print(e)
+        total_health_loss = 0
+    info_dict["total health lost"] = int(total_health_loss)
+
+    diff_shurikens = np.diff(repvars["shurikens"], n=1)
+    try:
+        index_shurikens_loss = list(np.unique(diff_shurikens, return_counts=True)[0]).index(-1)
+        total_shurikens_loss = np.unique(diff_shurikens, return_counts=True)[1][index_shurikens_loss]
+    except Exception as e:
+        total_shurikens_loss = 0
+    info_dict["shurikens used"] = int(total_shurikens_loss)
+
+    info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
+    return info_dict
 
 def process_bk2_file(task, args):
     """
@@ -144,6 +230,8 @@ def process_bk2_file(task, args):
             inttype=retro.data.Integrations.CUSTOM_ONLY,
         )
     )
+    # Fix position resets
+    repetition_variables["X_player"] = fix_position_resets(repetition_variables["X_player"])
     
     if args.save_videos:
         os.makedirs(os.path.dirname(mp4_fname), exist_ok=True)
@@ -177,19 +265,11 @@ def process_bk2_file(task, args):
         np.save(confs_fname, confounds_dict)
         logging.info(f"Confounds saved to: {confs_fname}")
 
-    #info_dict = create_sidecar_dict(repetition_variables)
-    #info_dict["IndexInRun"] = idx_in_run
-    #info_dict["Run"] = run
-    #info_dict["IndexGlobal"] = global_idx
-    #info_dict["IndexLevel"] = level_idx
-    #info_dict["LevelFullName"] = level
-    #info_dict["Bk2File"] = entities
-    info_dict = {}
+    info_dict = create_sidecar_dict(repetition_variables)
     os.makedirs(os.path.dirname(json_fname), exist_ok=True)
     with open(json_fname, "w") as f:
         json.dump(info_dict, f)
     logging.info(f"JSON saved for: {json_fname}")
-    breakpoint()
 
 def main(args):
     # Set logging level based on --verbose flag.
