@@ -14,6 +14,9 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
 from bids_loader.stimuli.game import get_variables_from_replay
+import sys
+sys.path.append(op.join(op.dirname(__file__), '..', 'replays'))
+from create_replays import fix_position_resets
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -24,34 +27,6 @@ parser.add_argument(
     help="Data path to look for events.tsv and .bk2 files. Should be the root of the shinobi dataset.",
 )
 
-def fix_position_resets(X_player):
-    """Sometimes X_player resets to 0 but the player's position should keep
-    increasing.
-    This fixes it and makes sure that X_player is continuous. If not, the
-    values after the jump are corrected.
-
-    Parameters
-    ----------
-    X_player : list
-        List of raw positions at each timeframe from one repetition.
-
-    Returns
-    -------
-    list
-        List of lists of fixed (continuous) positions. One per repetition.
-
-    """
-
-    fixed_X_player = []
-    raw_X_player = X_player
-    fix = 0  # keeps trace of the shift
-    fixed_X_player.append(raw_X_player[0])  # add first frame
-    for i in range(1, len(raw_X_player) - 1):  # ignore first and last frames
-        if raw_X_player[i - 1] - raw_X_player[i] > 100:
-            fix += raw_X_player[i - 1] - raw_X_player[i]
-        fixed_X_player.append(raw_X_player[i] + fix)
-    fixed_X_player.append(fixed_X_player[-1]) # re-add the last frame for consistency
-    return fixed_X_player
 
 
 def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_healthloss=True, get_kills=True, get_frames=True):
