@@ -1,6 +1,6 @@
 # Shinobi Replay Processing
 
-This script processes `.bk2` replay files from the Shinobi dataset and generates various outputs including videos, metadata, game variables, RAM dumps, and low-level psychophysical features.
+This script processes `.bk2` replay files from the Shinobi dataset and generates various outputs including videos, metadata, game variables, and low-level psychophysical features.
 
 ## Prerequisites
 
@@ -62,8 +62,7 @@ For each `.bk2` replay file, the following files are generated (all BIDS-complia
 1. **`*_recording.mp4`** - Video playback of the replay with audio
 2. **`.json`** - Metadata sidecar (duration, score, enemies killed, etc.)
 3. **`*_variables.json`** - Frame-by-frame game variables (position, health, score, etc.)
-4. **`*_ramdump.npz`** - Full RAM state at each frame
-5. **`*_lowlevel.npy`** - Low-level psychophysical features:
+4. **`*_lowlevel.npy`** - Low-level psychophysical features:
    - Luminance
    - Optical flow
    - Audio envelope per frame
@@ -77,16 +76,16 @@ If you want to skip certain outputs (e.g., to save time/space), use the `--skip_
 python code/replays/create_replays.py --skip_videos
 
 # Skip multiple outputs
-python code/replays/create_replays.py --skip_videos --skip_ramdumps
+# Skip multiple outputs
+python code/replays/create_replays.py --skip_videos --skip_variables
 
-# Only generate JSON metadata and variables
-python code/replays/create_replays.py --skip_videos --skip_ramdumps --skip_lowlevel
+# Only generate JSON metadata
+python code/replays/create_replays.py --skip_videos --skip_variables --skip_lowlevel
 ```
 
 Available skip flags:
 - `--skip_videos` - Skip video generation
 - `--skip_variables` - Skip game variables extraction
-- `--skip_ramdumps` - Skip RAM dump generation
 - `--skip_lowlevel` - Skip low-level features computation
 
 ### Advanced Options
@@ -129,7 +128,6 @@ shinobi/
 │   │       ├── sub-01_ses-002_task-shinobi_run-01_level-1_rep-01.json
 │   │       ├── sub-01_ses-002_task-shinobi_run-01_level-1_rep-01_recording.mp4
 │   │       ├── sub-01_ses-002_task-shinobi_run-01_level-1_rep-01_variables.json
-│   │       ├── sub-01_ses-002_task-shinobi_run-01_level-1_rep-01_ramdump.npz
 │   │       └── sub-01_ses-002_task-shinobi_run-01_level-1_rep-01_lowlevel.npy
 │   └── ...
 ├── stimuli/
@@ -154,7 +152,7 @@ shinobi/
 
 ### Memory issues
 - Keep single-threaded processing (default) or use fewer parallel jobs: `--n_jobs 2`
-- Skip RAM dumps and videos: `--skip_ramdumps --skip_videos`
+- Skip videos: `--skip_videos`
 
 ### Already processed files
 - The script automatically detects existing outputs and skips them
@@ -162,8 +160,8 @@ shinobi/
 
 ## Performance Tips
 
-- **Fastest**: `--skip_videos --skip_lowlevel --skip_ramdumps` (only JSON + variables)
-- **Balanced**: `--skip_ramdumps` (all except RAM dumps)
+- **Fastest**: `--skip_videos --skip_lowlevel` (only JSON + variables)
+- **Balanced**: `--skip_videos`
 - **Full processing**: No skip flags (default - generates everything)
 
 Processing time per replay (approximate):
