@@ -1,11 +1,18 @@
 """
-This script is used to generate JSON sidecar files (and optionally additional files)
-and playback videos for the mario dataset.
-By default, only the JSON file is kept.
-Use the flags below to have the script generate and save extra files:
-  --save_videos      : Save the playback video file (.mp4).
-  --save_variables  : Save the variables file (.npz) that contains game variables.
-  --save_states     : Save the full RAM state at each frame into a *_states.npy file.
+This script is used to generate replay outputs for the Shinobi dataset.
+
+By default, all files are generated:
+  - JSON sidecar file with metadata
+  - MP4 video file
+  - Variables JSON file with game variables
+  - RAM dump NPZ file
+  - Low-level features NPY file (luminance, optical flow, audio envelope)
+
+Use the flags below to skip specific outputs:
+  --skip_videos      : Skip generating video files (.mp4).
+  --skip_variables   : Skip generating variables files (_variables.json).
+  --skip_ramdumps    : Skip generating RAM dump files (_ramdump.npz).
+  --skip_lowlevel    : Skip generating low-level features (_lowlevel.npy).
 
 Use the -v/--verbose flag to display verbose output.
 """
@@ -13,7 +20,7 @@ Use the -v/--verbose flag to display verbose output.
 import argparse
 import os
 import os.path as op
-import retro
+import stable_retro as retro
 import pandas as pd
 import json
 import numpy as np
@@ -21,11 +28,10 @@ from joblib import Parallel, delayed
 from tqdm_joblib import tqdm_joblib
 from tqdm import tqdm
 import logging
-from cneuromod_vg_utils.replay import get_variables_from_replay
-from cneuromod_vg_utils.video import make_mp4
-from skvideo import io
+from videogames_utils.replay import get_variables_from_replay
+from videogames_utils.video import make_mp4
 import gzip
-from cneuromod_vg_utils.psychophysics import (
+from videogames_utils.psychophysics import (
     compute_luminance,
     compute_optical_flow,
     audio_envelope_per_frame,
@@ -166,6 +172,32 @@ def create_sidecar_dict(repvars):
     info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
     return info_dict
 
+def _check_outputs_exist(json_fname, mp4_fname, ramdump_fname, variables_fname, lowlevel_fname, args):
+    """
+    Check which output files already exist.
+
+    Returns:
+        tuple: (all_exist, missing_outputs) where all_exist is bool and
+               missing_outputs is list of output types that need to be generated
+    """
+    missing = []
+
+    # JSON is always required
+    if not op.exists(json_fname):
+        missing.append("json")
+
+    # Check optional outputs (if not skipped)
+    if not args.skip_videos and not op.exists(mp4_fname):
+        missing.append("video")
+    if not args.skip_ramdumps and not op.exists(ramdump_fname):
+        missing.append("ramdump")
+    if not args.skip_variables and not op.exists(variables_fname):
+        missing.append("variables")
+    if not args.skip_lowlevel and not op.exists(lowlevel_fname):
+        missing.append("lowlevel")
+
+    return len(missing) == 0, missing
+
 def process_bk2_file(task, args):
     """
     Process one .bk2 file.
@@ -206,19 +238,25 @@ def process_bk2_file(task, args):
 
     # Set the output file names using BIDS-like naming.
     json_fname = op.join(OUTPUT_FOLDER, bk2_file.replace(".bk2", ".json"))
-    # Check if already processed.
-    if op.exists(json_fname):
-        logging.info(f"Already processed: {json_fname}")
+    mp4_fname = json_fname.replace(".json", "_recording.mp4")
+    ramdump_fname = json_fname.replace(".json", "_ramdump.npz")
+    variables_fname = json_fname.replace(".json", "_variables.json")
+    lowlevel_fname = json_fname.replace(".json", "_lowlevel.npy")
+
+    # Check if all required outputs already exist - skip if so
+    all_exist, missing_outputs = _check_outputs_exist(
+        json_fname, mp4_fname, ramdump_fname, variables_fname, lowlevel_fname, args
+    )
+    if all_exist:
+        entities = bk2_file.split("/")[-1].replace(".bk2", "")
+        logging.info(f"Skipping (all outputs exist): {entities}")
         return
     else:
+        entities = bk2_file.split("/")[-1].replace(".bk2", "")
+        logging.info(f"Processing {entities} (missing: {', '.join(missing_outputs)})")
         os.makedirs(os.path.dirname(json_fname), exist_ok=True)
 
-    logging.info(f"Processing: {bk2_path}")
-
-    mp4_fname = json_fname.replace(".json", ".mp4")
-    ramdump_fname = json_fname.replace(".json", ".npz")
-    variables_fname = json_fname.replace(".json", "_variables.json")
-    confs_fname = json_fname.replace(".json", "_confs.npy")
+    logging.debug(f"Processing: {bk2_path}")
     
     skip_first_step = idx_in_run == 0
     
@@ -232,22 +270,23 @@ def process_bk2_file(task, args):
     )
     # Fix position resets
     repetition_variables["X_player"] = fix_position_resets(repetition_variables["X_player"])
-    
-    if args.save_videos:
+
+    if not args.skip_videos:
         os.makedirs(os.path.dirname(mp4_fname), exist_ok=True)
         make_mp4(replay_frames, mp4_fname, audio=audio_track, sample_rate=audio_rate, fps=60)
         logging.info(f"Video saved to: {mp4_fname}")
-    if args.save_ramdumps:
+    if not args.skip_ramdumps:
         os.makedirs(os.path.dirname(ramdump_fname), exist_ok=True)
         np.savez(ramdump_fname, np.array(replay_states))
         logging.info(f"States saved to: {ramdump_fname}")
-    if args.save_variables:
+    if not args.skip_variables:
         os.makedirs(os.path.dirname(variables_fname), exist_ok=True)
-        with open(variables_fname, "w") as f:  # Changed 'wb' to 'w' for text mode
+        with open(variables_fname, "w") as f:
             json.dump(repetition_variables, f)
-    if args.save_confs:
-        os.makedirs(os.path.dirname(confs_fname), exist_ok=True)
-        # Compute psychophysical confounds (luminance, optical flow, audio envelope)
+        logging.info(f"Variables saved to: {variables_fname}")
+    if not args.skip_lowlevel:
+        os.makedirs(os.path.dirname(lowlevel_fname), exist_ok=True)
+        # Compute low-level features (luminance, optical flow, audio envelope)
         luminance = compute_luminance(replay_frames)
         optical_flow = compute_optical_flow(replay_frames)
         audio_envelope = audio_envelope_per_frame(
@@ -257,13 +296,13 @@ def process_bk2_file(task, args):
             frame_count=len(replay_frames),
         )
 
-        confounds_dict = {
+        lowlevel_dict = {
             "luminance": luminance,
             "optical_flow": optical_flow,
             "audio_envelope": audio_envelope,
         }
-        np.save(confs_fname, confounds_dict)
-        logging.info(f"Confounds saved to: {confs_fname}")
+        np.save(lowlevel_fname, lowlevel_dict)
+        logging.info(f"Low-level features saved to: {lowlevel_fname}")
 
     info_dict = create_sidecar_dict(repetition_variables)
     os.makedirs(os.path.dirname(json_fname), exist_ok=True)
@@ -331,9 +370,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d",
         "--datapath",
-        default="sourcedata/shinobi",
+        default=".",
         type=str,
-        help="Data path to look for events.tsv and .bk2 files. Should be the root of the mario dataset.",
+        help="Data path to look for events.tsv and .bk2 files. Should be the root of the shinobi dataset.",
     )
     parser.add_argument(
         "-s",
@@ -345,41 +384,36 @@ if __name__ == "__main__":
     parser.add_argument(
         "-o",
         "--output",
-        default='outputdata/',
+        default=None,
         type=str,
-        help="Path to the derivatives folder, where the outputs will be saved.",
+        help="Path to the output folder (deprecated - outputs now go to gamelogs/ within datapath).",
     )
     parser.add_argument(
         "-nj",
         "--n_jobs",
-        default=-1,
+        default=1,
         type=int,
-        help="Number of parallel jobs to run. Use -1 to use all available cores.",
+        help="Number of parallel jobs to run. Default is 1 (single-threaded). Use -1 to use all available cores.",
     )
     parser.add_argument(
-        "--save_videos",
+        "--skip_videos",
         action="store_true",
-        help="Save the playback video file (.mp4).",
+        help="Skip generating the playback video file (_recording.mp4).",
     )
     parser.add_argument(
-        "--save_variables",
+        "--skip_variables",
         action="store_true",
-        help="Save the variables file (.json) that contains game variables.",
+        help="Skip generating the variables file (_variables.json).",
     )
     parser.add_argument(
-        "--save_states",
+        "--skip_ramdumps",
         action="store_true",
-        help="Save full RAM state at each frame into a *_states.npy file.",
+        help="Skip generating RAM dumps (_ramdump.npz).",
     )
     parser.add_argument(
-        "--save_ramdumps",
+        "--skip_lowlevel",
         action="store_true",
-        help="Save RAM dumps at each frame into a *_ramdumps.npy file.",
-    )
-    parser.add_argument(
-        "--save_confs",
-        action="store_true",
-        help="Save psychophysical confounds into a *_confs.npy file.",
+        help="Skip generating low-level features (_lowlevel.npy).",
     )
     parser.add_argument(
         "-v",
