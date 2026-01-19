@@ -5,19 +5,18 @@ By default, all files are generated:
   - JSON sidecar file with metadata
   - MP4 video file
   - Variables JSON file with game variables
-  - RAM dump NPZ file
   - Low-level features NPY file (luminance, optical flow, audio envelope)
 
 Use the flags below to skip specific outputs:
   --skip_videos      : Skip generating video files (.mp4).
   --skip_variables   : Skip generating variables files (_variables.json).
-  --skip_ramdumps    : Skip generating RAM dump files (_ramdump.npz).
   --skip_lowlevel    : Skip generating low-level features (_lowlevel.npy).
 
 Use the -v/--verbose flag to display verbose output.
 """
 
 import argparse
+import gc
 import os
 import os.path as op
 import stable_retro as retro
@@ -28,9 +27,9 @@ from joblib import Parallel, delayed
 from tqdm_joblib import tqdm_joblib
 from tqdm import tqdm
 import logging
+import multiprocessing
 from videogames_utils.replay import get_variables_from_replay
 from videogames_utils.video import make_mp4
-import gzip
 from videogames_utils.psychophysics import (
     compute_luminance,
     compute_optical_flow,
@@ -172,7 +171,7 @@ def create_sidecar_dict(repvars):
     info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
     return info_dict
 
-def _check_outputs_exist(json_fname, mp4_fname, ramdump_fname, variables_fname, lowlevel_fname, args):
+def _check_outputs_exist(json_fname, mp4_fname, variables_fname, lowlevel_fname, args):
     """
     Check which output files already exist.
 
@@ -189,8 +188,6 @@ def _check_outputs_exist(json_fname, mp4_fname, ramdump_fname, variables_fname, 
     # Check optional outputs (if not skipped)
     if not args.skip_videos and not op.exists(mp4_fname):
         missing.append("video")
-    if not args.skip_ramdumps and not op.exists(ramdump_fname):
-        missing.append("ramdump")
     if not args.skip_variables and not op.exists(variables_fname):
         missing.append("variables")
     if not args.skip_lowlevel and not op.exists(lowlevel_fname):
@@ -239,13 +236,12 @@ def process_bk2_file(task, args):
     # Set the output file names using BIDS-like naming.
     json_fname = op.join(OUTPUT_FOLDER, bk2_file.replace(".bk2", ".json"))
     mp4_fname = json_fname.replace(".json", "_recording.mp4")
-    ramdump_fname = json_fname.replace(".json", "_ramdump.npz")
     variables_fname = json_fname.replace(".json", "_variables.json")
     lowlevel_fname = json_fname.replace(".json", "_lowlevel.npy")
 
     # Check if all required outputs already exist - skip if so
     all_exist, missing_outputs = _check_outputs_exist(
-        json_fname, mp4_fname, ramdump_fname, variables_fname, lowlevel_fname, args
+        json_fname, mp4_fname, variables_fname, lowlevel_fname, args
     )
     if all_exist:
         entities = bk2_file.split("/")[-1].replace(".bk2", "")
@@ -260,7 +256,7 @@ def process_bk2_file(task, args):
     
     skip_first_step = idx_in_run == 0
     
-    repetition_variables, replay_info, replay_frames, replay_states, audio_track, audio_rate = (
+    repetition_variables, replay_info, replay_frames, audio_track, audio_rate = (
         get_variables_from_replay(
             op.join(DATA_PATH, bk2_file),
             skip_first_step=skip_first_step,
@@ -275,10 +271,6 @@ def process_bk2_file(task, args):
         os.makedirs(os.path.dirname(mp4_fname), exist_ok=True)
         make_mp4(replay_frames, mp4_fname, audio=audio_track, sample_rate=audio_rate, fps=60)
         logging.info(f"Video saved to: {mp4_fname}")
-    if not args.skip_ramdumps:
-        os.makedirs(os.path.dirname(ramdump_fname), exist_ok=True)
-        np.savez(ramdump_fname, np.array(replay_states))
-        logging.info(f"States saved to: {ramdump_fname}")
     if not args.skip_variables:
         os.makedirs(os.path.dirname(variables_fname), exist_ok=True)
         with open(variables_fname, "w") as f:
@@ -309,6 +301,17 @@ def process_bk2_file(task, args):
     with open(json_fname, "w") as f:
         json.dump(info_dict, f)
     logging.info(f"JSON saved for: {json_fname}")
+
+    # Explicitly free large objects to prevent memory accumulation
+    del replay_frames, audio_track, repetition_variables, replay_info
+    gc.collect()
+
+def _worker_wrapper(task_args_tuple):
+    """Wrapper function for multiprocessing - must be at module level to be picklable."""
+    task, args_dict = task_args_tuple
+    # Reconstruct args namespace in worker process
+    args_ns = argparse.Namespace(**args_dict)
+    process_bk2_file(task, args_ns)
 
 def main(args):
     # Set logging level based on --verbose flag.
@@ -352,16 +355,24 @@ def main(args):
     tasks = [tuple(row) for row in bk2_df.values]
     logging.info(f"Found {len(tasks)} bk2 files to process.")
     n_jobs = os.cpu_count() if args.n_jobs == -1 else args.n_jobs
+    
+    # Use multiprocessing.Pool with maxtasksperchild=1 to guarantee memory cleanup
+    # This kills each worker after processing ONE file, forcing the OS to reclaim
+    # all memory (including stable-retro's internal leaks)
+    
+    # Convert args to dict for pickling
+    args_dict = vars(args)
+    task_arg_pairs = [(task, args_dict) for task in tasks]
+    
     if n_jobs != 1:
-        with tqdm_joblib(
-            tqdm(desc="Processing files", total=len(tasks))
-        ) as progress_bar:
-            Parallel(n_jobs=n_jobs)(
-                delayed(process_bk2_file)(task, args) for task in tasks
-            )
+        with multiprocessing.Pool(processes=n_jobs, maxtasksperchild=1) as pool:
+            list(tqdm(pool.imap(_worker_wrapper, task_arg_pairs), 
+                     total=len(tasks), desc="Processing files"))
     else:
-        for task in tqdm(tasks, desc="Processing files"):
-            process_bk2_file(task, args)
+        # Single process mode: still use subprocess isolation
+        with multiprocessing.Pool(processes=1, maxtasksperchild=1) as pool:
+            list(tqdm(pool.imap(_worker_wrapper, task_arg_pairs), 
+                     total=len(tasks), desc="Processing files"))
 
 
 if __name__ == "__main__":
@@ -404,11 +415,6 @@ if __name__ == "__main__":
         "--skip_variables",
         action="store_true",
         help="Skip generating the variables file (_variables.json).",
-    )
-    parser.add_argument(
-        "--skip_ramdumps",
-        action="store_true",
-        help="Skip generating RAM dumps (_ramdump.npz).",
     )
     parser.add_argument(
         "--skip_lowlevel",
