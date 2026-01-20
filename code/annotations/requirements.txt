@@ -4,4 +4,3 @@ stable-retro
 torch
 Pillow
 git+https://github.com/courtois-neuromod/videogames_utils.git
-git+https://github.com/courtois-neuromod/bids_loader.git
