@@ -7,7 +7,6 @@ This script generates BIDS-compatible annotated event files (`*_desc-annotated_e
 - Python 3.8 or higher
 - The Shinobi dataset with `.bk2` replay files
 - **Replays must be processed first** using `code/replays/create_replays.py` to generate `*_variables.json` files
-- ROM files in the `stimuli/` directory
 
 ## Installation
 
@@ -117,6 +116,3 @@ python code/annotations/generate_annotations.py --datapath .
 ### "No data path specified"
 - The script defaults to the current directory
 - Run from the dataset root or use `--datapath /path/to/shinobi`
-
-### ROM/stimuli errors
-- Verify that `stimuli/` contains the necessary ROM files for `stable-retro`
