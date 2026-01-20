@@ -13,9 +13,9 @@ from PIL import Image
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
-from bids_loader.stimuli.game import get_variables_from_replay
+from videogames_utils.replay import get_variables_from_replay
 import sys
-sys.path.append(op.join(op.dirname(__file__), '..', 'replays'))
+sys.path.append(op.abspath(op.join(op.dirname(__file__), '../replays')))
 from create_replays import fix_position_resets
 
 parser = argparse.ArgumentParser()

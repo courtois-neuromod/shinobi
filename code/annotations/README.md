@@ -1,18 +1,104 @@
-# Gameplay annotations for the shinobi dataset
-In order to benefit from the complex structure of video game tasks, a number of variables are extracted from the replays obtained during data acquisitions. The produced annotations are encoded in a BIDS-compatible format, i.e. a .tsv file with at least 3 rows : onset, duration and event_type (sometimes named trial_type). These files encode the beginning and start of each repetition, but also contains the values of state variables as well as some handcrafted annotations.
+# Shinobi Annotations Generator
 
-## State variables
-The values of the variables retrieved from the emulator RAM are encoded in separate columns with a sampling frequency of 60Hz, corresponding to the game frames (displayed at 60fps). In the annotated events file, each frame is encoded as a separate event.
-- frame_idx : Frame index (corresponding to line index in the .bk2). Starts from 0.
-- X_player : Player horizontal position in the level. Must be corrected for resets to ensure continuity.
-- Y_player : Player vertical position. Lower numbers means higher position.
-- shurikens : Number of shurikens available to the player
-- lives : Number of remaining lives. Decreases by one when the player loses health.
-- health : Amount of health. Starts at 16.
-- score : Player score.
+This script generates BIDS-compatible event files (`*_desc-annotated_events.tsv`) and metadata sidecars (`.json`) for the Shinobi dataset. It extracts game state variables from `.bk2` replay files and computes handcrafted annotations such as keypresses, kills, and health changes.
 
-## Handcrafted annotations
-Some annotations are handcrafted from a combination or a processing of state variables. These events can have varying durations (such as keypresses) or an arbitrary duration determined in generate_annotations.py (default = 0.1sec). 
-- Keypresses : RIGHT, LEFT, UP, DOWN, B, C. Onset is defined as the time of keypress, while duration is the amount of time before the next release of this key.
-- Kill : Detects when an enemy has been killed. Based on specific increases on the score variable
-- HealthLoss : Detects negative changes on the "health" variable. An event is marked every time the player loses health. 
+## Prerequisites
+
+- Python 3.8 or higher
+- The Shinobi dataset with `.bk2` replay files
+- ROM files in the `stimuli/` directory
+
+## Installation
+
+### 1. Create a Python virtual environment
+
+From the root directory of the shinobi repository:
+
+```bash
+python -m venv env
+```
+
+### 2. Activate the environment
+
+```bash
+source env/bin/activate  # On Linux/Mac
+# OR
+env\Scripts\activate  # On Windows
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r code/annotations/requirements.txt
+```
+
+This will install all required packages including:
+- numpy, pandas
+- stable-retro
+- torch
+- Pillow
+- videogames_utils (from courtois-neuromod)
+- bids_loader (from courtois-neuromod)
+
+## Usage
+
+### Basic Usage
+
+From the root directory of the shinobi repository:
+
+```bash
+python code/annotations/generate_annotations.py
+```
+
+This will:
+- Scan all `*_events.tsv` files in the dataset (recursively)
+- For each events file, identify the corresponding `.bk2` replay files
+- Generate a new `*_desc-annotated_events.tsv` file containing frame-by-frame annotations
+- Create/Update `.json` sidecar files for the `.bk2` replays with metadata (score, duration, etc.)
+
+### Options
+
+```bash
+# Specify a custom data path (default is current directory '.')
+python code/annotations/generate_annotations.py --datapath /path/to/shinobi
+```
+
+## Generated Annotations
+
+The script produces `*_desc-annotated_events.tsv` files. These files contain standard BIDS columns (`onset`, `duration`, `trial_type`) and additional columns for game state variables.
+
+### State Variables
+
+Sampled at 60Hz (once per frame).
+
+- **frame_idx**: Frame index (0-indexed).
+- **X_player**: Player horizontal position (corrected for resets).
+- **Y_player**: Player vertical position (inverted axis in some contexts, lower number = higher).
+- **shurikens**: Number of shurikens available.
+- **lives**: Number of remaining lives.
+- **health**: Player health (starts at 16).
+- **score**: Player score.
+- **level**: Current level identifier.
+
+### Handcrafted Events
+
+These are derived events with specific durations.
+
+- **Keypresses**: `RIGHT`, `LEFT`, `UP`, `DOWN`, `HIT` (B), `JUMP` (C).
+  - Onset: Time of press.
+  - Duration: Time until release.
+- **Kill**: Event marked when an enemy is killed (inferred from score increases).
+- **HealthLoss**: Event marked when the player loses health.
+- **HealthGain**: Event marked when the player gains health.
+
+## Troubleshooting
+
+### "File not found" or Missing Files
+- Ensure you are running the script from the dataset root or specified the correct `--datapath`.
+- Verify `stimuli/` contains the necessary ROM files for `stable-retro`.
+
+### Dependencies Issues
+- If `videogames_utils` or `bids_loader` fail to install, ensure you have git installed and access to the repositories.
+
+### "No data path specified"
+- The script defaults to the current directory. If you are running it from `code/annotations/`, it might not find the data. Run from the dataset root or use `--datapath ..`.
