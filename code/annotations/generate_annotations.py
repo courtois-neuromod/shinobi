@@ -65,13 +65,13 @@ def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_hea
                     all_df.append(temp_df)
 
             if get_healthloss:
-                temp_df = generate_healthloss_events(repvars, FS=FS, dur=0.1)
+                temp_df = generate_healthloss_events(repvars, FS=FS, dur=0)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
                 temp_df['rep_index'] = rep_index
                 all_df.append(temp_df)
 
             if get_kills:
-                temp_df = generate_kill_events(repvars, FS=FS, dur=0.1)
+                temp_df = generate_kill_events(repvars, FS=FS, dur=0)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
                 temp_df['rep_index'] = rep_index
                 all_df.append(temp_df)
@@ -141,7 +141,7 @@ def generate_key_events(repvars, key, FS=60):
                                    'frame_stop':frame_stop})
     return events_df
 
-def generate_kill_events(repvars, FS=60, dur=0.1):
+def generate_kill_events(repvars, FS=60, dur=0):
     """Create a BIDS compatible events dataframe containing kill events,
     based on a sudden increase of score.
     + 200 pts : basic enemies (all levels)
@@ -192,7 +192,7 @@ def generate_kill_events(repvars, FS=60, dur=0.1):
                                'frame_stop':frame_stop})
     return events_df
 
-def generate_healthloss_events(repvars, FS=60, dur=0.1):
+def generate_healthloss_events(repvars, FS=60, dur=0):
     """Create a BIDS compatible events dataframe containing Health Loss events
 
     Parameters
@@ -202,7 +202,7 @@ def generate_healthloss_events(repvars, FS=60, dur=0.1):
     FS : int
         The sampling rate of the .bk2 file
     dur : float
-        Arbitrary duration of the generated event, defaults to 0.1
+        Arbitrary duration of the generated event, defaults to 0
 
     Returns
     -------
@@ -275,7 +275,7 @@ def create_info_dict(repvars):
         total_shurikens_loss = 0
     info_dict["shurikens used"] = total_shurikens_loss
 
-    info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0.1))
+    info_dict["enemies killed"] = len(generate_kill_events(repvars, FS=60, dur=0))
     return info_dict
 
 def main():

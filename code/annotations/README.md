@@ -88,11 +88,11 @@ Continuous events with onset and duration:
 - Other button presses as recorded
 
 #### Combat Events
-Instantaneous events (duration=0.1):
+Instantaneous events (duration=0):
 - `Kill` - Enemy killed (detected from score increases of 200-300 points)
 
 #### Health Events
-Instantaneous events (duration=0.1):
+Instantaneous events (duration=0):
 - `HealthLoss` - Player took damage (health decreased)
 - `HealthGain` - Player gained health (health increased)
 
