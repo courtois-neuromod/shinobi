@@ -47,7 +47,7 @@ This will install all required packages including:
 From the root directory of the shinobi repository:
 
 ```bash
-python code/replays/create_replays.py
+python code/replays/generate_replays.py
 ```
 
 This will:
@@ -73,14 +73,14 @@ If you want to skip certain outputs (e.g., to save time/space), use the `--skip_
 
 ```bash
 # Skip video generation (fastest, saves most space)
-python code/replays/create_replays.py --skip_videos
+python code/replays/generate_replays.py --skip_videos
 
 # Skip multiple outputs
 # Skip multiple outputs
-python code/replays/create_replays.py --skip_videos --skip_variables
+python code/replays/generate_replays.py --skip_videos --skip_variables
 
 # Only generate JSON metadata
-python code/replays/create_replays.py --skip_videos --skip_variables --skip_lowlevel
+python code/replays/generate_replays.py --skip_videos --skip_variables --skip_lowlevel
 ```
 
 Available skip flags:
@@ -92,19 +92,19 @@ Available skip flags:
 
 ```bash
 # Use parallel processing with multiple jobs (default is single-threaded)
-python code/replays/create_replays.py --n_jobs 4
+python code/replays/generate_replays.py --n_jobs 4
 
 # Use all available CPU cores
-python code/replays/create_replays.py --n_jobs -1
+python code/replays/generate_replays.py --n_jobs -1
 
 # Verbose output
-python code/replays/create_replays.py --verbose
+python code/replays/generate_replays.py --verbose
 
 # Custom stimuli path (if ROMs are in a different location)
-python code/replays/create_replays.py --stimuli /path/to/stimuli
+python code/replays/generate_replays.py --stimuli /path/to/stimuli
 
 # Custom data path (if running from different directory)
-python code/replays/create_replays.py --datapath /path/to/shinobi
+python code/replays/generate_replays.py --datapath /path/to/shinobi
 ```
 
 ## How It Works
@@ -134,7 +134,7 @@ shinobi/
 │   └── ShinobiIIIReturnOfTheNinjaMaster-Genesis/
 ├── code/
 │   └── replays/
-│       ├── create_replays.py
+│       ├── generate_replays.py
 │       ├── requirements.txt
 │       └── README.md
 └── env/  # Created by you
