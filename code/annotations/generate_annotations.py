@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
 import sys
 sys.path.append(op.abspath(op.join(op.dirname(__file__), '../replays')))
-from create_replays import fix_position_resets
+from generate_replays import fix_position_resets
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
