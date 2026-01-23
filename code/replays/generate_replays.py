@@ -234,10 +234,10 @@ def process_bk2_file(task, args):
         return
 
     # Set the output file names using BIDS-like naming.
-    json_fname = op.join(OUTPUT_FOLDER, bk2_file.replace(".bk2", ".json"))
-    mp4_fname = json_fname.replace(".json", "_recording.mp4")
-    variables_fname = json_fname.replace(".json", "_variables.json")
-    lowlevel_fname = json_fname.replace(".json", "_lowlevel.npy")
+    json_fname = op.join(OUTPUT_FOLDER, bk2_file.replace(".bk2", "_summary.json"))
+    mp4_fname = json_fname.replace("_summary.json", "_recording.mp4")
+    variables_fname = json_fname.replace("_summary.json", "_variables.json")
+    lowlevel_fname = json_fname.replace("_summary.json", "_lowlevel.npy")
 
     # Check if all required outputs already exist - skip if so
     all_exist, missing_outputs = _check_outputs_exist(
