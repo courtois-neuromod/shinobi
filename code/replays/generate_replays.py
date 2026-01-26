@@ -155,8 +155,7 @@ def create_sidecar_dict(repvars):
     try:
         index_health_loss = list(np.unique(diff_health, return_counts=True)[0]).index(-1)
         total_health_loss = np.unique(diff_health, return_counts=True)[1][index_health_loss]
-    except Exception as e:
-        print(e)
+    except Exception:
         total_health_loss = 0
     info_dict["total health lost"] = int(total_health_loss)
 
