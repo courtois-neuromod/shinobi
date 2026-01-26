@@ -333,20 +333,23 @@ def main(args):
                 except Exception as e:
                     logging.error(f"Cannot read {run_events_file}: {e}")
                     continue
-                bk2_files = events_dataframe["stim_file"].values.tolist()
+                # Filter to only rows with valid .bk2 stim_files BEFORE enumerating
+                # This ensures idx_in_run correctly counts only actual game repetitions
+                valid_bk2_mask = events_dataframe["stim_file"].apply(
+                    lambda x: isinstance(x, str) and x != "Missing file" and ".bk2" in x
+                )
+                filtered_df = events_dataframe.loc[valid_bk2_mask].reset_index(drop=True)
 
-                for idx_in_run, bk2_file in enumerate(bk2_files):
-                    if isinstance(bk2_file, str):
-                        if bk2_file != "Missing file":
-                            level = events_dataframe["level"][idx_in_run]
-                            if ".bk2" in bk2_file:
-                                bk2_info = {
-                                    "bk2_file": bk2_file,
-                                    "run": run.split("-")[-1],
-                                    "idx_in_run": idx_in_run,
-                                    "level": level,
-                                }
-                                bk2_list.append(bk2_info)
+                for idx_in_run, row in filtered_df.iterrows():
+                    bk2_file = row["stim_file"]
+                    level = row["level"]
+                    bk2_info = {
+                        "bk2_file": bk2_file,
+                        "run": run.split("-")[-1],
+                        "idx_in_run": idx_in_run,
+                        "level": level,
+                    }
+                    bk2_list.append(bk2_info)
     bk2_df = pd.DataFrame(bk2_list)
     bk2_df = get_passage_order(bk2_df)
 
