@@ -258,8 +258,8 @@ def generate_healthloss_events(repvars, FS=60, dur=0):
 def generate_level_complete_events(repvars, FS=60):
     """Create a BIDS compatible events dataframe containing level complete events.
 
-    Level completion in Shinobi is detected by a sudden increment of 5000 points
-    on the instantScore variable (end-of-level bonus).
+    Level completion in Shinobi is defined as a run where no lives were lost.
+    The event is placed 5 seconds before the end of the replay.
 
     Parameters
     ----------
@@ -281,7 +281,7 @@ def generate_level_complete_events(repvars, FS=60):
     frame_start = []
     frame_stop = []
 
-    if "instantScore" not in repvars:
+    if "lives" not in repvars:
         return pd.DataFrame(data={
             'onset': onset,
             'duration': duration,
@@ -291,18 +291,21 @@ def generate_level_complete_events(repvars, FS=60):
             'frame_stop': frame_stop
         })
 
-    instant_score = repvars['instantScore']
-    diff_score = np.diff(instant_score, n=1)
+    # Calculate lives lost
+    lives_lost = sum([x for x in np.diff(repvars["lives"], n=1) if x < 0])
 
-    for idx, increment in enumerate(diff_score):
-        if increment >= 5000:
-            onset.append(idx / FS)
-            duration.append(0)
-            trial_type.append('Level_complete')
-            level.append(repvars["level"])
-            frame_start.append(idx)
-            frame_stop.append(idx)
-            break  # Only one level complete event per repetition
+    # If no lives lost, generate Level_complete event
+    if lives_lost == 0:
+        # Event is 5 seconds before the end of the replay
+        total_duration = len(repvars["lives"]) / FS
+        event_onset = max(0, total_duration - 5.0)
+        
+        onset.append(event_onset)
+        duration.append(0)
+        trial_type.append('Level_complete')
+        level.append(repvars.get("level", "n/a"))
+        frame_start.append(int(event_onset * FS))
+        frame_stop.append(int(event_onset * FS))
 
     events_df = pd.DataFrame(data={
         'onset': onset,

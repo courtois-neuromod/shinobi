@@ -61,4 +61,4 @@ Instantaneous events (duration=0):
 
 #### Level Completion Events
 Instantaneous events (duration=0):
-- `Level_complete` - Level completed (detected via instantScore increment of 5000+ points)
+- `Level_complete` - Level completed (defined as a run where no lives were lost; event placed 5s before end)
