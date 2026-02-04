@@ -56,7 +56,6 @@ def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_hea
         
         repvars['rep_onset'] = [events_dataframe['onset'][idx]]
         repvars['rep_duration'] = [events_dataframe['duration'][idx]]
-        rep_index = events_dataframe['rep_index'].iloc[idx]
 
         if "actions" in repvars.keys():
             if get_actions:
@@ -64,26 +63,22 @@ def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_hea
                 for act in ACTIONS:
                     temp_df = generate_key_events(repvars, act, FS=FS)
                     temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-                    temp_df['rep_index'] = rep_index
                     all_df.append(temp_df)
 
             if get_healthloss:
                 temp_df = generate_healthloss_events(repvars, FS=FS, dur=0)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-                temp_df['rep_index'] = rep_index
                 all_df.append(temp_df)
 
             if get_kills:
                 temp_df = generate_kill_events(repvars, FS=FS, dur=0)
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-                temp_df['rep_index'] = rep_index
                 all_df.append(temp_df)
 
             # Level complete
             temp_df = generate_level_complete_events(repvars, FS=FS)
             if not temp_df.empty:
                 temp_df['onset'] = temp_df['onset'] + repvars['rep_onset']
-                temp_df['rep_index'] = rep_index
                 all_df.append(temp_df)
     try:
         events_df = pd.concat(all_df).sort_values(by='onset').reset_index(drop=True)
@@ -97,9 +92,9 @@ def create_runevents(runvars, events_dataframe, FS=60, get_actions=True, get_hea
             if col in events_df.columns:
                 events_df[col] = events_df[col].astype('Int64')  # nullable integer
         
-        # Reorder columns: trial_type, rep_index, level, onset, duration, frame_start, frame_stop
+        # Reorder columns: trial_type, level, onset, duration, frame_start, frame_stop, phase, rep_index, stim_file
         cols = events_df.columns.tolist()
-        priority_cols = ['trial_type', 'rep_index', 'level', 'onset', 'duration', 'frame_start', 'frame_stop']
+        priority_cols = ['trial_type', 'level', 'onset', 'duration', 'frame_start', 'frame_stop', 'phase', 'rep_index', 'stim_file']
         priority_cols = [c for c in priority_cols if c in cols]  # only include existing columns
         other_cols = [c for c in cols if c not in priority_cols]
         events_df = events_df[priority_cols + other_cols]
@@ -376,11 +371,12 @@ def main():
                         events_dataframe = events_dataframe[
                             events_dataframe["trial_type"] == "gym-retro_game"
                         ]
-                        # Select only relevant columns and reset index to get rep_index
+                        # Select only relevant columns and reset index
                         events_dataframe = events_dataframe[
                             ["trial_type", "onset", "level", "stim_file"]
-                        ].reset_index()
-                        events_dataframe["rep_index"] = range(1, len(events_dataframe) + 1)
+                        ].reset_index(drop=True)
+                        # Set rep_index to 0-based sequential index for gym-retro_game events
+                        events_dataframe["rep_index"] = range(len(events_dataframe))
                         bk2_files = events_dataframe['stim_file'].values.tolist()
                         runvars = []
                         for bk2_idx, bk2_file in enumerate(bk2_files):
