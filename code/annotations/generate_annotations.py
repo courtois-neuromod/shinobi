@@ -447,6 +447,10 @@ def main():
                         events_df_annotated.replace({'trial_type': {'A':'NINJUTSU',
                                                                     'B':'HIT',
                                                                     'C':'JUMP'}}, inplace=True)
+                        # Normalize missing-file marker casing (raw events may use
+                        # lowercase 'Missing file'; the dataset standard is 'Missing File')
+                        events_df_annotated["stim_file"] = events_df_annotated["stim_file"].replace(
+                            "Missing file", "Missing File")
                         # Save
                         events_df_annotated.to_csv(events_annotated_fname, sep="\t", index=False)
                         print(f"Saved annotated events to: {events_annotated_fname}")
