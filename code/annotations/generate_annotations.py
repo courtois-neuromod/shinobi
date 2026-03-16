@@ -378,7 +378,7 @@ def main():
                         bk2_files = events_dataframe['stim_file'].values.tolist()
                         runvars = []
                         for bk2_idx, bk2_file in enumerate(bk2_files):
-                            if bk2_file != "Missing file" and type(bk2_file) != float:
+                            if str(bk2_file).lower() != "missing file" and type(bk2_file) != float:
                                 print("Adding : " + bk2_file)
                                 sub = bk2_file.split("/")[0]
                                 ses = bk2_file.split("/")[1]
@@ -434,13 +434,18 @@ def main():
                                 print("Missing file, skipping")
                                 runvars.append({})
                         
+                        # Shinobi is a fixed level-sequence design (levels 1/4/5 every
+                        # run, no discovery/practice split), so no phase column is emitted.
                         events_df_annotated = create_runevents(runvars, events_dataframe)
-                        
+
                         # Correct level naming
                         events_df_annotated.replace({'level': {'1-0': 'level-1',
                                                             '4-1': 'level-4',
                                                             '5-0': 'level-5'}}, inplace=True)
-                        events_df_annotated.replace({'trial_type': {'B':'HIT',
+                        # Normalize Genesis action buttons to semantic labels
+                        # (A = ninja magic/ninjutsu, B = attack/HIT, C = jump)
+                        events_df_annotated.replace({'trial_type': {'A':'NINJUTSU',
+                                                                    'B':'HIT',
                                                                     'C':'JUMP'}}, inplace=True)
                         # Save
                         events_df_annotated.to_csv(events_annotated_fname, sep="\t", index=False)

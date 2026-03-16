@@ -1,1 +1,13 @@
-{"duration": 169.46666666666667, "cleared": true, "end_score": 120190, "total health lost": 0, "shurikens used": 0, "enemies killed": 32}
+{
+    "Duration_seconds": 169.467,
+    "Frame_count": 10168,
+    "Outcome": "cleared",
+    "Score": 120190,
+    "Health_lost": 0,
+    "Shurikens_used": 0,
+    "Enemies_killed": 32,
+    "IndexInRun": 0,
+    "Run": "run-06",
+    "IndexGlobal": 118,
+    "IndexLevel": 48
+}
