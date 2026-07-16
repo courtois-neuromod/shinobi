@@ -2,3 +2,4 @@
 sourcedata
 .pybids_cache*
 env/
+__pycache__/
