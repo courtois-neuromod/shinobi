@@ -10,26 +10,60 @@ BK2_DURATION_DIFF_THRES = 0.2
 BOLD_DURATION_DIFF_THRES = 30
 
 
+def is_missing(stim_file):
+    """True for the "missing replay" sentinel.
+
+    Compared case-insensitively: this dataset contains both "Missing file" and
+    "Missing File", and the exact-match test silently let the second form through, so
+    rows with no replay were compared as if they had one.
+    """
+    if not isinstance(stim_file, str):
+        return True
+    value = stim_file.strip().lower()
+    # Some rows carry an empty stim_file rather than the sentinel.
+    return value in ("", "nan", "missing file")
+
+
+def plain_event_files():
+    """The run-level events files, excluding the generated annotated ones.
+
+    A plain `sub-*/ses-*/func/*_events.tsv` glob also matches
+    `*_desc-annotated_events.tsv`, which has a different schema; these tests parse the
+    plain layout and fail on the annotated one.
+    """
+    return sorted(
+        path for path in glob.glob("sub-*/ses-*/func/*_events.tsv")
+        if "desc-annotated" not in path
+    )
+
+
 def test_eventfiles():
     """Checks that all the .bk2 files mentioned in the events files are present
     in the sourcedata folder.
 
     """
     datapath = "./"
-    eventfiles_list = sorted(glob.glob("sub-*/ses-*/func/*_events.tsv"))
+    eventfiles_list = sorted(plain_event_files())
 
     bk2files_fromevents = []
     for eventfile in sorted(eventfiles_list):
         event_dataframe = pd.read_csv(eventfile, sep="\t")
         assert ("stim_file" in event_dataframe)
         for filepath in event_dataframe["stim_file"]:
-            if filepath != "Missing file" and not pd.isna(filepath):
+            if not pd.isna(filepath) and not is_missing(filepath):
                 bk2files_fromevents.append(op.join(datapath, filepath))
 
     bk2files_infolder = []
     for root, directory, files in os.walk(datapath):
+        # git-annex keeps its object store under .git/annex/objects, where every file is
+        # also named *.bk2; walking into it would compare the events against the annex
+        # internals rather than against the working tree.
+        directory[:] = [d for d in directory if d != ".git"]
         for file in files:
-            if ".bk2" in file and "ShinobiIII" in file:
+            # Was `"ShinobiIII" in file`, which matches the pre-BIDS naming. The
+            # replays were renamed to `*_task-shinobi_*.bk2`, so that filter found 0 of
+            # the 666 files actually present and the test compared against an empty set.
+            if file.endswith(".bk2"):
                 bk2files_infolder.append(op.join(root, file))
 
     bk2files_infolder.sort()
@@ -62,7 +96,7 @@ def test_eventfiles():
 def test_event_files_not_empty():
     """Test event files don't contain just the header."""
     empty_files = []
-    for event_path in glob.glob("sub-*/ses-*/func/*_events.tsv"):
+    for event_path in plain_event_files():
         with open(event_path, "r") as f:
             events = csv.reader(f, delimiter="\t")
             n_lines = sum([1 for row in events])
@@ -77,16 +111,21 @@ def test_durations():
     corresponds to the duration mentioned in bold.json files."""
     problematic_bk2 = []
     problematic_bold = []
-    for event_path in sorted(glob.glob("sub-*/ses-*/func/*_events.tsv")):
+    for event_path in sorted(plain_event_files()):
         json_path = event_path.replace("_events.tsv", "_bold.json")
         with open(event_path, "r") as f:
             events = csv.reader(f, delimiter="\t")
             rows = [row for row in events]
         if len(rows) > 1:
+            header = rows[0]
             for row in rows[1:]:
-                onset, duration, duration_bk2, level, bk2_path = row[1:]
+                fields = dict(zip(header, row))
+                onset = fields["onset"]
+                duration = fields["duration"]
+                duration_bk2 = fields["duration_bk2"]
+                bk2_path = fields["stim_file"]
                 if (
-                    bk2_path != "Missing file"
+                    not is_missing(bk2_path)
                     and abs(float(duration) - float(duration_bk2))
                     > BK2_DURATION_DIFF_THRES
                 ):

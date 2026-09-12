@@ -23,6 +23,7 @@ import stable_retro as retro
 import pandas as pd
 import json
 import numpy as np
+from videogames_utils.events import outcome as events_outcome
 from joblib import Parallel, delayed
 from tqdm_joblib import tqdm_joblib
 from tqdm import tqdm
@@ -148,6 +149,10 @@ def create_sidecar_dict(repvars):
     else:
         cleared = False
     info_dict["cleared"] = cleared
+    # Outcome, using the same vocabulary as the other three datasets. The previous
+    # on-disk summaries carried this key but the committed code did not write it, so
+    # regenerating them silently dropped it.
+    info_dict["Outcome"] = events_outcome.determine(repvars, "shinobi")
 
     info_dict["end_score"] = repvars["score"][-1]
 
@@ -242,7 +247,7 @@ def process_bk2_file(task, args):
     all_exist, missing_outputs = _check_outputs_exist(
         json_fname, mp4_fname, variables_fname, lowlevel_fname, args
     )
-    if all_exist:
+    if all_exist and not getattr(args, "force", False):
         entities = bk2_file.split("/")[-1].replace(".bk2", "")
         logging.info(f"Skipping (all outputs exist): {entities}")
         return
@@ -422,6 +427,13 @@ if __name__ == "__main__":
         "--skip_lowlevel",
         action="store_true",
         help="Skip generating low-level features (_lowlevel.npy).",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Regenerate outputs even when they already exist. Required when the "
+             "integration's data.json has gained new RAM variables, since the existing "
+             "_variables.json would otherwise be kept and the new variables never appear.",
     )
     parser.add_argument(
         "-v",

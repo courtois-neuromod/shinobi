@@ -1,2 +1,5 @@
 numpy
 pandas
+pytest
+pytest-check
+git+https://github.com/courtois-neuromod/videogames_utils.git

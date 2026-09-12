@@ -1,0 +1,33 @@
+# Schema, controlled-vocabulary and RAM-invariant checks on the annotated event files.
+#
+# The heavy checks need the replay sidecars (gamelogs/*_variables.json), which are annex
+# content and are not fetched in CI, so the invariant layer skips repetitions whose
+# sidecar is absent. What always runs is the schema and vocabulary layer, which is what
+# catches an events file drifting from task-shinobi\_events.json.
+name: events-tests
+
+on:
+  push:
+    branches: [ main, dev_replays ]
+  pull_request:
+    branches: [ main, dev_replays ]
+  workflow_dispatch:
+
+jobs:
+  events-tests:
+    if: github.repository != 'courtois-neuromod/bids_template'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r code/annotations/requirements.txt
+
+      - name: Run event tests
+        run: pytest code/tests/ -v
