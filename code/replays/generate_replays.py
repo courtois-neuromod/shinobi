@@ -31,11 +31,17 @@ import logging
 import multiprocessing
 from videogames_utils.replay import get_variables_from_replay
 from videogames_utils.video import make_mp4
+from videogames_utils.events.emit import FRAME_RATES
 from videogames_utils.psychophysics import (
     compute_luminance,
     compute_optical_flow,
     audio_envelope_per_frame,
 )
+
+# Native emulator frame rate. Videos, durations and per-frame features all use it,
+# so they stay aligned with the replay audio and the annotated events.
+FRAME_RATE = FRAME_RATES["ShinobiIIIReturnOfTheNinjaMaster-Genesis"]
+
 
 def fix_position_resets(X_player):
     """Sometimes X_player resets to 0 but the player's position should keep
@@ -141,7 +147,7 @@ def get_passage_order(bk2_df):
 def create_sidecar_dict(repvars):
     info_dict = {}
 
-    info_dict["duration"] = len(repvars["X_player"])/60
+    info_dict["duration"] = len(repvars["X_player"]) / FRAME_RATE
 
     lives_lost = sum([x for x in np.diff(repvars["lives"], n=1) if x < 0])
     if lives_lost == 0:
@@ -273,7 +279,7 @@ def process_bk2_file(task, args):
 
     if not args.skip_videos:
         os.makedirs(os.path.dirname(mp4_fname), exist_ok=True)
-        make_mp4(replay_frames, mp4_fname, audio=audio_track, sample_rate=audio_rate, fps=60)
+        make_mp4(replay_frames, mp4_fname, audio=audio_track, sample_rate=audio_rate, fps=FRAME_RATE)
         logging.info(f"Video saved to: {mp4_fname}")
     if not args.skip_variables:
         os.makedirs(os.path.dirname(variables_fname), exist_ok=True)
@@ -288,7 +294,7 @@ def process_bk2_file(task, args):
         audio_envelope = audio_envelope_per_frame(
             audio_track,
             sample_rate=audio_rate,
-            frame_rate=60.0,
+            frame_rate=FRAME_RATE,
             frame_count=len(replay_frames),
         )
 
