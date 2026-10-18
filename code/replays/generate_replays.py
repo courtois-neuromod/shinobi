@@ -42,6 +42,14 @@ from videogames_utils.psychophysics import (
 # so they stay aligned with the replay audio and the annotated events.
 FRAME_RATE = FRAME_RATES["ShinobiIIIReturnOfTheNinjaMaster-Genesis"]
 
+# Shinobi has no scenario.json: each level was played with its own done condition.
+# Keys are the `level` column of the events files.
+SCENARIOS = {
+    "1-0": "scenario_Level1.json",
+    "4-1": "scenario_Level4-1.json",
+    "5-0": "scenario_Level5-0.json",
+}
+
 
 def fix_position_resets(X_player):
     """Sometimes X_player resets to 0 but the player's position should keep
@@ -268,6 +276,7 @@ def process_bk2_file(task, args):
         get_variables_from_replay(
             op.join(DATA_PATH, bk2_file),
             game=args.game_name,
+            scenario=op.join(STIMULI_PATH, args.game_name, SCENARIOS[level]),
             inttype=retro.data.Integrations.CUSTOM_ONLY,
         )
     )
