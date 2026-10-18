@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Generate annotated BIDS event files for the shinobi dataset.
 
-The event logic lives in ``videogames_utils.events`` so that all four CNeuroMod
-videogame datasets share one controlled vocabulary, one set of RAM decode tables and one
-validator. This script is only the command-line front end.
+The game-specific event logic lives in ``code/game_specific/``; the pipeline that runs it
+is the game-agnostic ``videogames_utils.events``, shared by the CNeuroMod videogame
+datasets. This script is only the command-line front end.
 
 Usage:
     python generate_annotations.py -d /path/to/shinobi
@@ -15,11 +15,13 @@ Requires the replay sidecars (``gamelogs/*_variables.json``); run
 """
 
 import argparse
+import os.path as op
 import sys
 
 from videogames_utils.events import run, validation
+from videogames_utils.events.game import load_game
 
-TASK = "shinobi"
+GAME = load_game(op.join(op.dirname(op.abspath(__file__)), "..", ".."))
 
 
 def main() -> int:
@@ -44,18 +46,18 @@ def main() -> int:
 
     print(f"Generating shinobi annotations in: {args.datapath}")
     stats = run.annotate_dataset(
-        args.datapath, TASK, output_dir=args.output_path,
+        args.datapath, GAME, output_dir=args.output_path,
         subjects=args.subjects, sessions=args.sessions, overwrite=args.overwrite)
     print(f"\n{stats['written']} written, {stats['skipped']} skipped "
           f"(already present), {stats['empty']} with no usable replay")
 
     if not args.no_sidecar and not args.output_path:
-        path = run.write_events_sidecar(args.datapath, TASK)
+        path = run.write_events_sidecar(args.datapath, GAME)
         print(f"wrote {path}")
 
     if args.validate:
         target = args.output_path or args.datapath
-        report = validation.validate_dataset(target, TASK)
+        report = validation.validate_dataset(target, GAME)
         print("\n" + report.summary())
         for finding in report.findings[:40]:
             print("\n" + str(finding))

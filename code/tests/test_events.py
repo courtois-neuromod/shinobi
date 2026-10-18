@@ -16,9 +16,10 @@ import pandas as pd
 import pytest
 
 from videogames_utils.events import validation, vocabulary
+from videogames_utils.events.game import load_game
 
-TASK = "shinobi"
 DATAPATH = op.abspath(op.join(op.dirname(__file__), "..", ".."))
+GAME = load_game(DATAPATH)
 
 ANNOTATED = sorted(glob(op.join(DATAPATH, "sub-*", "ses-*", "func",
                                 "*_desc-annotated_events.tsv")))
@@ -30,7 +31,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope="module")
 def report():
     """One validation pass shared by the tests below."""
-    return validation.validate_dataset(DATAPATH, TASK)
+    return validation.validate_dataset(DATAPATH, GAME)
 
 
 def _fail(findings):
@@ -79,7 +80,7 @@ def test_every_emitted_type_is_allowed_for_this_task():
     used = set()
     for path in ANNOTATED:
         used |= set(pd.read_csv(path, sep="\t", usecols=["trial_type"])["trial_type"])
-    wrong = sorted(t for t in used if not vocabulary.is_valid(str(t), TASK))
+    wrong = sorted(t for t in used if not vocabulary.is_valid(str(t), GAME.vocabulary))
     assert not wrong, f"trial_types not allowed for shinobi: {wrong[:10]}"
 
 
