@@ -263,13 +263,10 @@ def process_bk2_file(task, args):
         os.makedirs(os.path.dirname(json_fname), exist_ok=True)
 
     logging.debug(f"Processing: {bk2_path}")
-    
-    skip_first_step = idx_in_run == 0
-    
+
     repetition_variables, replay_info, replay_frames, audio_track, audio_rate = (
         get_variables_from_replay(
             op.join(DATA_PATH, bk2_file),
-            skip_first_step=skip_first_step,
             game=args.game_name,
             inttype=retro.data.Integrations.CUSTOM_ONLY,
         )
