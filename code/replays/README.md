@@ -46,7 +46,8 @@ For each `sub-*_ses-*_task-shinobi_*.bk2`:
 
 - `*_variables.json`: the game variables of `data.json`, one value per frame, and the
   buttons pressed.
-- `*_recording.mp4`: the replay with its audio, at the emulator's frame rate.
+- `*_recording.mp4`: the replay with its audio, at 60 frames per second, the rate it was
+  displayed at during acquisition.
 - `*_lowlevel.npy`: luminance, optical flow and audio envelope, per frame.
 - `*_summary.json`: one record per repetition, below.
 
