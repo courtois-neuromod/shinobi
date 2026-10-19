@@ -16,9 +16,10 @@ import pandas as pd
 import pytest
 
 from videogames_utils.events import validation, vocabulary
+from videogames_utils.events.game import load_game
 
-TASK = "shinobi"
 DATAPATH = op.abspath(op.join(op.dirname(__file__), "..", ".."))
+GAME = load_game(DATAPATH)
 
 ANNOTATED = sorted(glob(op.join(DATAPATH, "sub-*", "ses-*", "func",
                                 "*_desc-annotated_events.tsv")))
@@ -30,7 +31,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope="module")
 def report():
     """One validation pass shared by the tests below."""
-    return validation.validate_dataset(DATAPATH, TASK)
+    return validation.validate_dataset(DATAPATH, GAME)
 
 
 def _fail(findings):
@@ -57,20 +58,18 @@ def test_events_not_empty():
 
 def test_sidecar_present_and_complete():
     """task-<task>_events.json exists and covers every trial_type actually emitted."""
-    sidecar = op.join(DATAPATH, f"task-shinobi_events.json")
+    sidecar = op.join(DATAPATH, f"task-{GAME.task}_events.json")
     assert op.exists(sidecar), f"missing {sidecar}"
 
     import json
     with open(sidecar) as handle:
-        levels = set(json.load(handle)["trial_type"]["Levels"])
+        tree = json.load(handle)["trial_type"]["EventTypes"]
 
     used = set()
     for path in ANNOTATED:
         used |= set(pd.read_csv(path, sep="\t", usecols=["trial_type"])["trial_type"])
 
-    undocumented = sorted(
-        t for t in used
-        if t not in levels and t.rsplit("/", 1)[0] + "/*" not in levels)
+    undocumented = sorted(t for t in used if not vocabulary.is_described(tree, t))
     assert not undocumented, f"trial_types missing from the sidecar: {undocumented[:10]}"
 
 
@@ -79,7 +78,7 @@ def test_every_emitted_type_is_allowed_for_this_task():
     used = set()
     for path in ANNOTATED:
         used |= set(pd.read_csv(path, sep="\t", usecols=["trial_type"])["trial_type"])
-    wrong = sorted(t for t in used if not vocabulary.is_valid(str(t), TASK))
+    wrong = sorted(t for t in used if not vocabulary.is_valid(str(t), GAME.vocabulary))
     assert not wrong, f"trial_types not allowed for shinobi: {wrong[:10]}"
 
 

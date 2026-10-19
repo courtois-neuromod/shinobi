@@ -1,0 +1,36 @@
+"""What :mod:`videogames_utils.events` needs to know about
+Shinobi III: Return of the Ninja Master (Genesis).
+
+See :class:`videogames_utils.events.game.Game`.
+"""
+
+from videogames_utils.events.game import Game
+
+from . import docs, generator, outcome, ram, replays, validation
+from .vocabulary import VOCABULARY
+
+
+GAME = Game(
+    task="shinobi",
+    name="Shinobi III: Return of the Ninja Master (Genesis)",
+    game_id="ShinobiIIIReturnOfTheNinjaMaster-Genesis",
+    frame_rate=generator.FRAME_RATE,
+    vocabulary=VOCABULARY,
+    generate=generator.generate,
+    outcome=outcome.outcome,
+    summary=replays.summary,
+    scenario=replays.scenario,
+    process_variables=replays.process_variables,
+    form_states=frozenset({"PlayerState/Normal"}),
+    form_var=None,
+    state_timers=(),
+    coin_var=None,
+    check_repetition=validation.check_repetition,
+    # Completion is read from the end-of-level fade, which the recording sometimes stops
+    # short of (13 of 532 cleared repetitions), so a miss is only a warning.
+    completion_miss=("warning", "recording stopped before the end-of-level fade"),
+    reference=docs.REFERENCE,
+    not_emitted=docs.NOT_EMITTED,
+    golden_sessions=[("sub-01", "ses-002")],
+    ram_candidates=ram.SHINOBI_CANDIDATES,
+)

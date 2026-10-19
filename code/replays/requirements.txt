@@ -1,7 +1,1 @@
-numpy
-pandas
-stable-retro
-joblib
-tqdm
-tqdm-joblib
 ./code/videogames_utils  # git submodule; run pip from the dataset root
