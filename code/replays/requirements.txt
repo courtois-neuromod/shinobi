@@ -1,1 +1,5 @@
-./code/videogames_utils  # git submodule; run pip from the dataset root
+# The exact environment of this dataset's code: the packages of requirements.lock in
+# the videogames_utils submodule, then that submodule itself. From the dataset root:
+#   pip install -r code/replays/requirements.txt
+-r ../videogames_utils/requirements.lock
+-e ./code/videogames_utils
