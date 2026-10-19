@@ -32,8 +32,10 @@ from videogames_utils.events.spans import clip, constant_runs, nonzero_runs
 
 TASK = "shinobi"
 
-#: Emulator frame rate, read from the core with ``retro.make(game).em.get_screen_rate()``.
-FRAME_RATE = 59.922743404312
+#: The rate the game was displayed at during acquisition: the task paced the emulator on
+#: the screen's 60 Hz refresh, not at its native 59.9227 Hz. The play time the task logged
+#: for each repetition and the gaps between repetition onsets both give 60.01 Hz.
+FRAME_RATE = 60.0
 
 #: Score increments that correspond to defeating an enemy, from the value table in the
 #: shipped generator's own docstring:
