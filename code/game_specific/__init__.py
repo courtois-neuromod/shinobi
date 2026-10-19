@@ -6,7 +6,7 @@ See :class:`videogames_utils.events.game.Game`.
 
 from videogames_utils.events.game import Game
 
-from . import docs, generator, outcome, ram, validation
+from . import docs, generator, outcome, ram, replays, validation
 from .vocabulary import VOCABULARY
 
 
@@ -19,6 +19,9 @@ GAME = Game(
     buttons=generator.BUTTON_ACTIONS,
     generate=generator.generate,
     outcome=outcome.outcome,
+    summary=replays.summary,
+    scenario=replays.scenario,
+    process_variables=replays.process_variables,
     form_states=frozenset({"PlayerState/Normal"}),
     form_var=None,
     state_timers=(),
