@@ -10,20 +10,15 @@ from . import docs, generator, outcome, ram, validation
 from .vocabulary import VOCABULARY
 
 
-def level_from_events(level: str) -> str:
-    """The events.tsv level in the annotated form: ``4-1`` -> ``4``."""
-    return level.split("-")[0]
-
-
 GAME = Game(
     task="shinobi",
     name="Shinobi III: Return of the Ninja Master (Genesis)",
     game_id="ShinobiIIIReturnOfTheNinjaMaster-Genesis",
     frame_rate=generator.FRAME_RATE,
     vocabulary=VOCABULARY,
+    buttons=generator.BUTTON_ACTIONS,
     generate=generator.generate,
     outcome=outcome.outcome,
-    level_from_events=level_from_events,
     form_states=frozenset({"PlayerState/Normal"}),
     form_var=None,
     state_timers=(),
@@ -32,7 +27,7 @@ GAME = Game(
     # Completion is read from the end-of-level fade, which the recording sometimes stops
     # short of (17 of 536 cleared repetitions), so a miss is only a warning.
     completion_miss=("warning", "recording stopped before the end-of-level fade"),
-    notes=docs.NOTES,
+    reference=docs.REFERENCE,
     not_emitted=docs.NOT_EMITTED,
     golden_sessions=[("sub-01", "ses-002")],
     ram_candidates=ram.SHINOBI_CANDIDATES,

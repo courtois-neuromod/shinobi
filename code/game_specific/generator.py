@@ -75,7 +75,6 @@ BUTTON_ACTIONS = {
     "LEFT": "Action/Left", "RIGHT": "Action/Right", "UP": "Action/Up",
     "DOWN": "Action/Down", "B": "Action/Attack", "C": "Action/Jump",
     "A": "Action/Ninjutsu", "START": "Action/Start", "MODE": "Action/Select",
-    "X": "Action/Other", "Y": "Action/Other", "Z": "Action/Other",
 }
 
 
@@ -89,13 +88,12 @@ def _transitions(series, predicate) -> List[int]:
     return out
 
 
-def generate(repvars: dict, level=None, outcome: Optional[str] = None,
+def generate(repvars: dict, outcome: Optional[str] = None,
              stim_file: Optional[str] = None, **defaults):
     """Build the events DataFrame for one Shinobi repetition."""
     fs = FRAME_RATE
     n = len(repvars["health"])
-    acc = EventAccumulator(level if level is not None else repvars.get("level"), fs,
-                           **defaults)
+    acc = EventAccumulator(fs, **defaults)
 
     def col(name):
         return repvars.get(name, [0] * n)

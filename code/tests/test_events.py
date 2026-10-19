@@ -57,22 +57,20 @@ def test_events_not_empty():
 
 
 def test_sidecar_present_and_complete():
-    """task-<task>_events.json exists and covers every trial_type actually emitted."""
-    sidecar = op.join(DATAPATH, f"task-shinobi_events.json")
+    """task-<task>_events.json exists and lists every trial_type actually emitted."""
+    sidecar = op.join(DATAPATH, f"task-{GAME.task}_events.json")
     assert op.exists(sidecar), f"missing {sidecar}"
 
     import json
     with open(sidecar) as handle:
-        levels = set(json.load(handle)["trial_type"]["Levels"])
+        levels = json.load(handle)["trial_type"]["Levels"]
 
     used = set()
     for path in ANNOTATED:
         used |= set(pd.read_csv(path, sep="\t", usecols=["trial_type"])["trial_type"])
 
-    undocumented = sorted(
-        t for t in used
-        if t not in levels and t.rsplit("/", 1)[0] + "/*" not in levels)
-    assert not undocumented, f"trial_types missing from the sidecar: {undocumented[:10]}"
+    unlisted = sorted(t for t in used if t not in levels)
+    assert not unlisted, f"trial_types missing from the sidecar: {unlisted[:10]}"
 
 
 def test_every_emitted_type_is_allowed_for_this_task():
