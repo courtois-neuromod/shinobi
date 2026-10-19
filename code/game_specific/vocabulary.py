@@ -1,14 +1,13 @@
 """The ``trial_type`` vocabulary of Shinobi III: Return of the Ninja Master (Genesis).
 
-Every event this game may emit, in the order of the README and the BIDS sidecar.
+Every event this game may emit.
 """
 
 from videogames_utils.events.vocabulary import EventType
 
 VOCABULARY = [
     EventType("PlayerDamaged",
-              "The player is hit and loses the current power-up state (Mario games) or "
-              "health (Shinobi).",
+              "The player is hit and loses health.",
               former=("Hit/powerup_lost", "HealthLoss", "Player_damaged")),
     EventType("PlayerDied",
               "The player loses all health or dies from an environmental hazard. "
@@ -24,16 +23,15 @@ VOCABULARY = [
               "The player collects a health item and the health bar increases.",
               former=("HealthGain", "Health_gained")),
     EventType("PlayerState/Normal",
-              "The player is in Shinobi's single form. Joe Musashi has no power-up "
-              "forms, so this row simply covers every frame on which the player is "
-              "alive in the level (the temporary weapon upgrade is not tracked; see "
-              "the README). Present for uniformity with the Mario datasets.",
+              "The player is in the game's single form. Joe Musashi has no power-up "
+              "forms, so this row covers every frame on which the player is alive in "
+              "the level (the temporary weapon upgrade is not tracked; see the "
+              "README). Present so that every frame of play has a form row.",
               former=("Player_state/Normal",),
               durational=True),
     EventType("PlayerState/HitRecovery",
-              "Post-hit recovery: the player has just been damaged and blinks. In the "
-              "Mario games nothing can hurt the player until it ends; in Shinobi it is "
-              "the game's post-hit counter.",
+              "Post-hit recovery: the game's post-hit counter, during which the player "
+              "flashes.",
               former=("Player_state/Hit_recovery",),
               durational=True),
     EventType("ItemCollected/{item_type}",
@@ -41,12 +39,12 @@ VOCABULARY = [
               "collectible.",
               former=("Item_collected/{item_type}",)),
     EventType("EnemyDefeated",
-              "The player defeats an enemy. Shinobi has no RAM map for enemy types, so "
-              "this event is untyped and is inferred from score increments.",
+              "The player defeats an enemy. There is no known RAM map for enemy types, "
+              "so this event is untyped and is inferred from score increments.",
               former=("Kill", "Enemy_defeated")),
     EventType("ProjectileAppeared/Shuriken",
-              "The player throws a shuriken. A point event: Shinobi has no RAM map for "
-              "object positions, so the projectile cannot be tracked on screen.",
+              "The player throws a shuriken. A point event: there is no known RAM map "
+              "for object positions, so the projectile cannot be tracked on screen.",
               former=("Projectile_appeared/Shuriken",)),
     EventType("WeaponPowerupStarted/{powerup_type}",
               "The player receives a temporary or persistent weapon upgrade.",
@@ -59,9 +57,9 @@ VOCABULARY = [
               "A new level or gameplay attempt begins.",
               former=("Level_started",)),
     EventType("LevelCompleted",
-              "The player successfully finishes the level. In Shinobi this is the "
-              "start of the end-of-level fade that closes the recording; it is missed "
-              "in the few cleared repetitions whose recording stopped before the fade.",
+              "The player successfully finishes the level: the start of the "
+              "end-of-level fade that closes the recording. It is missed in the few "
+              "cleared repetitions whose recording stopped before the fade.",
               former=("Level_complete", "Level_completed")),
     EventType("Action/Left",
               "The player holds the left direction.",
@@ -84,24 +82,24 @@ VOCABULARY = [
               former=("JUMP",),
               durational=True),
     EventType("Action/Attack",
-              "The player presses the attack button (Shinobi).",
+              "The player presses the attack button.",
               former=("HIT",),
               durational=True),
     EventType("Action/Ninjutsu",
-              "The player presses the ninjutsu button (Shinobi).",
+              "The player presses the ninjutsu button.",
               former=("NINJUTSU",),
               durational=True),
     EventType("Action/Other",
               "The player presses a button with no documented function in this game "
-              "(e.g. L/R on the SNES pad in Super Mario All-Stars). The raw button is "
-              "in the `button` column.",
+              "(X, Y or Z on the six-button pad). The raw button is in the `button` "
+              "column.",
               durational=True),
     EventType("Action/Start",
               "The player presses START (pauses the game).",
               former=("START",),
               durational=True),
     EventType("Action/Select",
-              "The player presses SELECT / MODE.",
+              "The player presses MODE.",
               former=("SELECT", "MODE"),
               durational=True),
     EventType("Screen/Gameplay",
@@ -115,28 +113,23 @@ VOCABULARY = [
               "that follows it. The player has no control.",
               durational=True),
     EventType("Screen/LevelEnd",
-              "The end-of-level sequence after the level is completed: the flagpole "
-              "slide, walk into the castle and time bonus (SMB1); the goal card and "
-              "COURSE CLEAR screen (mario3); the ROUND CLEAR bonus tally (shinobi). "
-              "The player has no control.",
+              "The end-of-level sequence after the level is completed: the closing "
+              "fade, with the ROUND CLEAR bonus tally on level 1. The player has no "
+              "control.",
               former=("Screen/Level_end",),
               durational=True),
     EventType("Screen/Transition",
-              "A transition inside a level with no player control: pipe, vine or door "
-              "travel and the black or fading screen while the next area loads (SMB1 "
-              "pipes, vines and the exit from a bonus area; mario3 pipes and doors; "
-              "shinobi section fades), and the fade back into play after a shinobi "
-              "death.",
+              "A transition inside a level with no player control: the section fades, "
+              "and the fade back into play after a death.",
               durational=True),
     EventType("Screen/GameOver",
-              "The GAME OVER screen after the last life is lost: mario3's world map "
-              "with the GAME OVER dialog, shinobi's GAME OVER / CONTINUE screen. "
-              "Recordings were meant to stop at the death, so this only appears where "
-              "one ran on.",
+              "The GAME OVER / CONTINUE screen after the last life is lost. Recordings "
+              "were meant to stop at the death, so this only appears where one ran on.",
               former=("Screen/Game_over",),
               durational=True),
-    EventType("gym-retro_game",
+    EventType("Repetition",
               "One repetition of gameplay (one .bk2 file). This is the container row "
               "that carries `stim_file`; all other events fall inside its window.",
+              former=("gym-retro_game",),
               durational=True),
 ]
