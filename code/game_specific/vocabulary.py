@@ -9,12 +9,17 @@ VOCABULARY = [
     EventType("PlayerDamaged",
               "The player is hit and loses health.",
               former=("Hit/powerup_lost", "HealthLoss", "Player_damaged")),
-    EventType("PlayerDied",
-              "The player loses all health or dies from an environmental hazard. "
-              "`onset` is the frame health reaches zero and `duration` runs to the "
+    EventType("PlayerDied/Enemy",
+              "The player dies after their health is drained by enemy hits: the hit that "
+              "empties the health bar.",
+              former=("PlayerDied", "Player_died")),
+    EventType("PlayerDied/Fall",
+              "The player falls into a pit or into water and dies. `onset` is the frame "
+              "the player reaches the bottom of the screen and `duration` runs to the "
               "frame the life is actually lost, 2-6 s later, once the death animation "
-              "and the fade have played.",
-              former=("Player_died",),
+              "and the fade have played (or to the end of the recording when it stops "
+              "first).",
+              former=("PlayerDied", "Player_died"),
               durational=True),
     EventType("LifeGained",
               "The player collects or earns an extra life.",
