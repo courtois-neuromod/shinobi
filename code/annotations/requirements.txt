@@ -2,4 +2,4 @@ numpy
 pandas
 pytest
 pytest-check
-git+https://github.com/courtois-neuromod/videogames_utils.git
+./code/videogames_utils  # git submodule; run pip from the dataset root

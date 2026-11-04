@@ -9,6 +9,7 @@ Processes `.bk2` replay files to generate video, metadata, game variables, and l
     ```bash
     python -m venv env
     source env/bin/activate
+    git submodule update --init code/videogames_utils
     pip install -r code/replays/requirements.txt
     ```
 

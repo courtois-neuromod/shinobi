@@ -29,7 +29,7 @@ from tqdm_joblib import tqdm_joblib
 from tqdm import tqdm
 import logging
 import multiprocessing
-from videogames_utils.replay import get_variables_from_replay
+from videogames_utils.replay import done_problem, get_variables_from_replay
 from videogames_utils.video import make_mp4
 from videogames_utils.events.emit import FRAME_RATES
 from videogames_utils.psychophysics import (
@@ -41,6 +41,14 @@ from videogames_utils.psychophysics import (
 # Native emulator frame rate. Videos, durations and per-frame features all use it,
 # so they stay aligned with the replay audio and the annotated events.
 FRAME_RATE = FRAME_RATES["ShinobiIIIReturnOfTheNinjaMaster-Genesis"]
+
+# Shinobi has no scenario.json: each level was played with its own done condition.
+# Keys are the `level` column of the events files.
+SCENARIOS = {
+    "1-0": "scenario_Level1.json",
+    "4-1": "scenario_Level4-1.json",
+    "5-0": "scenario_Level5-0.json",
+}
 
 
 def fix_position_resets(X_player):
@@ -263,17 +271,16 @@ def process_bk2_file(task, args):
         os.makedirs(os.path.dirname(json_fname), exist_ok=True)
 
     logging.debug(f"Processing: {bk2_path}")
-    
-    skip_first_step = idx_in_run == 0
-    
+
     repetition_variables, replay_info, replay_frames, audio_track, audio_rate = (
         get_variables_from_replay(
             op.join(DATA_PATH, bk2_file),
-            skip_first_step=skip_first_step,
             game=args.game_name,
+            scenario=op.join(STIMULI_PATH, args.game_name, SCENARIOS[level]),
             inttype=retro.data.Integrations.CUSTOM_ONLY,
         )
     )
+    problem = done_problem([info["done"] for info in replay_info], bk2_file)
     # Fix position resets
     repetition_variables["X_player"] = fix_position_resets(repetition_variables["X_player"])
 
@@ -315,13 +322,26 @@ def process_bk2_file(task, args):
     # Explicitly free large objects to prevent memory accumulation
     del replay_frames, audio_track, repetition_variables, replay_info
     gc.collect()
+    return problem
 
 def _worker_wrapper(task_args_tuple):
     """Wrapper function for multiprocessing - must be at module level to be picklable."""
     task, args_dict = task_args_tuple
     # Reconstruct args namespace in worker process
     args_ns = argparse.Namespace(**args_dict)
-    process_bk2_file(task, args_ns)
+    return process_bk2_file(task, args_ns)
+
+
+def _report_done_problems(problems):
+    """Print every replay whose done flag is not set on its last frame only."""
+    problems = [p for p in problems if p]
+    if problems:
+        banner = "!" * 80
+        logging.warning(
+            f"\n{banner}\n{len(problems)} replay(s) do not end on done:\n"
+            + "\n".join(problems)
+            + f"\n{banner}"
+        )
 
 def main(args):
     # Set logging level based on --verbose flag.
@@ -379,13 +399,14 @@ def main(args):
     
     if n_jobs != 1:
         with multiprocessing.Pool(processes=n_jobs, maxtasksperchild=1) as pool:
-            list(tqdm(pool.imap(_worker_wrapper, task_arg_pairs), 
-                     total=len(tasks), desc="Processing files"))
+            problems = list(tqdm(pool.imap(_worker_wrapper, task_arg_pairs),
+                                 total=len(tasks), desc="Processing files"))
     else:
         # Single process mode: still use subprocess isolation
         with multiprocessing.Pool(processes=1, maxtasksperchild=1) as pool:
-            list(tqdm(pool.imap(_worker_wrapper, task_arg_pairs), 
-                     total=len(tasks), desc="Processing files"))
+            problems = list(tqdm(pool.imap(_worker_wrapper, task_arg_pairs),
+                                 total=len(tasks), desc="Processing files"))
+    _report_done_problems(problems)
 
 
 if __name__ == "__main__":
