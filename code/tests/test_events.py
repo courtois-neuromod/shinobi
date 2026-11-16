@@ -6,7 +6,8 @@ Run from the dataset root:
 
 These are the V0 (schema and controlled vocabulary) and V1 (invariants recomputed from
 the raw RAM) layers described in `code/annotations/README.md`. They are skipped when no
-annotated events files are present, so a fresh clone without replays still passes.
+annotated events file has its content here: a fresh clone without the annex content, as in
+CI, still passes.
 """
 
 import os.path as op
@@ -21,8 +22,10 @@ from videogames_utils.events.game import load_game
 DATAPATH = op.abspath(op.join(op.dirname(__file__), "..", ".."))
 GAME = load_game(DATAPATH)
 
-ANNOTATED = sorted(glob(op.join(DATAPATH, "sub-*", "ses-*", "func",
-                                "*_desc-annotated_events.tsv")))
+#: Annotated files with their content; an annex link without content is not counted.
+ANNOTATED = sorted(p for p in glob(op.join(DATAPATH, "sub-*", "ses-*", "func",
+                                           "*_desc-annotated_events.tsv"))
+                   if op.exists(p))
 
 pytestmark = pytest.mark.skipif(
     not ANNOTATED, reason="no annotated events files; run generate_annotations.py first")
