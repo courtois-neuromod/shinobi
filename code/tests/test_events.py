@@ -6,7 +6,8 @@ Run from the dataset root:
 
 These are the V0 (schema and controlled vocabulary) and V1 (invariants recomputed from
 the raw RAM) layers described in `code/annotations/README.md`. They are skipped when no
-annotated events files are present, so a fresh clone without replays still passes.
+annotated events file has its content here: a fresh clone without the annex content, as in
+CI, still passes.
 """
 
 import os.path as op
@@ -16,12 +17,15 @@ import pandas as pd
 import pytest
 
 from videogames_utils.events import validation, vocabulary
+from videogames_utils.events.game import load_game
 
-TASK = "shinobi"
 DATAPATH = op.abspath(op.join(op.dirname(__file__), "..", ".."))
+GAME = load_game(DATAPATH)
 
-ANNOTATED = sorted(glob(op.join(DATAPATH, "sub-*", "ses-*", "func",
-                                "*_desc-annotated_events.tsv")))
+#: Annotated files with their content; an annex link without content is not counted.
+ANNOTATED = sorted(p for p in glob(op.join(DATAPATH, "sub-*", "ses-*", "func",
+                                           "*_desc-annotated_events.tsv"))
+                   if op.exists(p))
 
 pytestmark = pytest.mark.skipif(
     not ANNOTATED, reason="no annotated events files; run generate_annotations.py first")
@@ -30,7 +34,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope="module")
 def report():
     """One validation pass shared by the tests below."""
-    return validation.validate_dataset(DATAPATH, TASK)
+    return validation.validate_dataset(DATAPATH, GAME)
 
 
 def _fail(findings):
@@ -56,22 +60,20 @@ def test_events_not_empty():
 
 
 def test_sidecar_present_and_complete():
-    """task-<task>_events.json exists and covers every trial_type actually emitted."""
-    sidecar = op.join(DATAPATH, f"task-shinobi_events.json")
+    """task-<task>_events.json exists and lists every trial_type actually emitted."""
+    sidecar = op.join(DATAPATH, f"task-{GAME.task}_events.json")
     assert op.exists(sidecar), f"missing {sidecar}"
 
     import json
     with open(sidecar) as handle:
-        levels = set(json.load(handle)["trial_type"]["Levels"])
+        levels = json.load(handle)["trial_type"]["Levels"]
 
     used = set()
     for path in ANNOTATED:
         used |= set(pd.read_csv(path, sep="\t", usecols=["trial_type"])["trial_type"])
 
-    undocumented = sorted(
-        t for t in used
-        if t not in levels and t.rsplit("/", 1)[0] + "/*" not in levels)
-    assert not undocumented, f"trial_types missing from the sidecar: {undocumented[:10]}"
+    unlisted = sorted(t for t in used if t not in levels)
+    assert not unlisted, f"trial_types missing from the sidecar: {unlisted[:10]}"
 
 
 def test_every_emitted_type_is_allowed_for_this_task():
@@ -79,7 +81,7 @@ def test_every_emitted_type_is_allowed_for_this_task():
     used = set()
     for path in ANNOTATED:
         used |= set(pd.read_csv(path, sep="\t", usecols=["trial_type"])["trial_type"])
-    wrong = sorted(t for t in used if not vocabulary.is_valid(str(t), TASK))
+    wrong = sorted(t for t in used if not vocabulary.is_valid(str(t), GAME.vocabulary))
     assert not wrong, f"trial_types not allowed for shinobi: {wrong[:10]}"
 
 

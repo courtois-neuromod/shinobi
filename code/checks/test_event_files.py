@@ -1,3 +1,11 @@
+"""Whole-dataset checks of the plain events files against the .bk2 files and the BOLD.
+
+They need the content of every events file, .bk2 and BOLD sidecar, so they run on a
+complete clone, from the dataset root:
+
+    pytest code/checks/
+"""
+
 import os
 import pandas as pd
 import os.path as op

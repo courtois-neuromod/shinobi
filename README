@@ -24,15 +24,14 @@ Courtois NeuroMod data are [freely shared with the scientific community](https:/
 ## Annotated game events
 
 `sub-*/ses-*/func/*_desc-annotated_events.tsv` carry the game events aligned to the fMRI
-runs: one `gym-retro_game` row per repetition (one `.bk2` replay), and inside it the
+runs: one `Repetition` row per repetition (one `.bk2` replay), and inside it the
 player's actions, deaths, power-up states, enemies on screen, level completion and the
 screens shown (title card, death sequence, end-of-level sequence, transitions). They are
 generated from the replays by `code/annotations/generate_annotations.py`, a thin front end
 over the shared [`videogames_utils.events`](https://github.com/courtois-neuromod/videogames_utils)
-package. The vocabulary is documented in `task-shinobi_events.json` (BIDS sidecar),
-`code/annotations/README.md` (every event this game may emit, with its row count and
-accuracy notes) and the cross-game
-[`docs/EVENT_REFERENCE.md`](https://github.com/courtois-neuromod/videogames_utils/blob/main/docs/EVENT_REFERENCE.md).
+package. The vocabulary is documented in `task-shinobi_events.json` (BIDS sidecar) and
+`code/annotations/README.md` (every event this game may emit, with its row count, the RAM
+address and value it is read from and how it was validated).
 Per-repetition metadata (`phase`, `IndexInRun`, `IndexGlobal`, `IndexLevel`, `Outcome`)
 is in `gamelogs/*_summary.json`.
 
