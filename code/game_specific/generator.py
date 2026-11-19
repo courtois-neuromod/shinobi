@@ -55,7 +55,7 @@ KILL_SCORE_VALUES = frozenset({200, 300, 400, 500})
 
 #: Values of the (misnamed) ``blackScreen`` variable at $FF0024. It is a screen-mode
 #: byte, non-zero whenever the game rather than the player drives the screen. Read off
-#: rendered frames and the full corpus (666 replays):
+#: rendered frames and every replay of the dataset:
 #:
 #:   40  scroll lock while an enemy wave attacks -- ordinary gameplay, the screen is NOT
 #:       black; 105-231 frames, ~3 per level at fixed positions
@@ -73,14 +73,13 @@ SCREEN_LEVEL_END_VALUES = (22, 62)
 #: Values the player's animation state (``status``, $FF415A) takes for the death
 #: sequence, and the cause each one means. ``status`` switches to one of them on the very
 #: frame ``health`` reaches 0 and holds it until the life is lost, and it takes neither
-#: value at any other time. Over the corpus (666 replays, 144 deaths), confirmed on the
-#: rendered frames:
+#: value at any other time. Over every death of the dataset, confirmed on the rendered
+#: frames:
 #:
 #:   41  health drained by enemy hits: the player collapses in the play area (97-208 px
-#:       from the top of the screen), 1-3 health left before the last hit. 18 deaths.
+#:       from the top of the screen), 1-3 health left before the last hit.
 #:   43  fell into a pit or into water: the player is at the bottom edge of the screen
-#:       (369-381 px) and the health bar is wiped in one frame, usually from full. 126
-#:       deaths.
+#:       (369-381 px) and the health bar is wiped in one frame, usually from full.
 #:
 #: No other death occurs in levels 1, 4 and 5, and the game has no level timer.
 DEATH_CAUSES = {41: "Enemy", 43: "Fall"}
@@ -153,7 +152,7 @@ def _deaths(col, n: int) -> List[Tuple[int, int, str]]:
     ``onset`` is the frame ``status`` enters a death state, which is the frame health
     reaches 0. ``stop`` is the frame the life is lost -- ``lives`` only drops once the
     death animation and fade have played, 2-6 s later -- or the last frame when the
-    recording stops before that (4 deaths in the corpus, all falls), which a death keyed
+    recording stops before that (this happens with falls), which a death keyed
     on ``lives`` alone would miss.
     """
     status = col("status")
@@ -274,9 +273,9 @@ def _level_events(acc: EventAccumulator, n: int) -> None:
     any repetition in which no life was lost -- a property of the whole repetition dressed
     up as a timed event -- and an earlier release of this module dropped it, having found
     that ``blackScreen`` is set in every repetition. It is: the value 40 is the scroll lock
-    of an enemy wave. But its *trailing* value discriminates perfectly over the corpus: a
-    fade of 22 or 62 running to the end of the recording occurs in 519 of 532 cleared
-    repetitions and in none of the 134 failed ones (which end in the death value 21 or in
-    play). The 13 misses are cleared repetitions whose recording stopped before the fade.
+    of an enemy wave. But its *trailing* value discriminates: a fade of 22 or 62
+    running to the end of the recording occurs in cleared repetitions and in no failed one
+    (which end in the death value 21 or in play). A cleared repetition whose recording
+    stopped before the fade gets no event.
     """
     acc.add("LevelStarted", 0)

@@ -27,8 +27,8 @@ GAME = Game(
     state_timers=(),
     coin_var=None,
     check_repetition=validation.check_repetition,
-    # Completion is read from the end-of-level fade, which the recording sometimes stops
-    # short of (13 of 532 cleared repetitions), so a miss is only a warning.
+    # Completion is read from the end-of-level fade, which a recording can stop short of,
+    # so a miss is only a warning.
     completion_miss=("warning", "recording stopped before the end-of-level fade"),
     reference=docs.REFERENCE,
     not_emitted=docs.NOT_EMITTED,
