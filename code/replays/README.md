@@ -29,7 +29,7 @@ The ROM and the integration (`data.json`, states, scenarios) are in
 
 ```bash
 python code/replays/generate_replays.py -nj -1
-python code/replays/generate_replays.py -sub sub-01 -ses ses-001 --skip_videos
+python code/replays/generate_replays.py -sub sub-01 -ses ses-001 --outputs variables summary
 ```
 
 - `-d`, `--datapath`: dataset root (default: the current directory).
@@ -37,7 +37,9 @@ python code/replays/generate_replays.py -sub sub-01 -ses ses-001 --skip_videos
 - `-s`, `--stimuli`: where the integration is (default: `<datapath>/stimuli`).
 - `-nj`, `--n_jobs`: parallel jobs, `-1` for all cores (default: 1).
 - `--subjects`, `--sessions`: process only these, e.g. `-sub sub-01 -ses ses-001`.
-- `--skip_videos`, `--skip_variables`, `--skip_lowlevel`: skip an output.
+- `--outputs`: the outputs to write, any of `videos variables lowlevel summary` (default:
+  all). The emulator runs only for videos, variables or lowlevel; `summary` alone is
+  made from the existing `_variables.json`.
 - `--force`: regenerate outputs that already exist (needed when `data.json` has gained
   variables).
 - `-v`, `--verbose`: detailed logging.

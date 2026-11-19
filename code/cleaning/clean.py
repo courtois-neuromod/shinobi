@@ -15,7 +15,7 @@ def clean_eventfiles():
 #        print(eventfile)
         dataframe = pd.read_csv(eventfile, sep="\t")
         # Replace NaN by proper string
-        dataframe = dataframe.fillna("Missing file")
+        dataframe = dataframe.fillna("Missing File")
         # remove junk columns
         for column_name in dataframe.columns:
             if "Unnamed" in column_name:
@@ -41,7 +41,7 @@ def bk2_to_bids():
         dataframe = pd.read_csv(eventfile, sep="\t")
 
         for idx, stimfile in enumerate(dataframe["stim_file"]):
-            if stimfile != "Missing file": # If stimfile is not "Missing file"
+            if stimfile != "Missing File": # If stimfile is not "Missing File"
                 # Read info from namestring
                 split_string = stimfile.split("/")
                 subject = split_string[-1][4:6]
