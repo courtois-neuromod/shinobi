@@ -19,12 +19,7 @@ BOLD_DURATION_DIFF_THRES = 30
 
 
 def is_missing(stim_file):
-    """True for the "missing replay" sentinel.
-
-    Compared case-insensitively: this dataset contains both "Missing file" and
-    "Missing File", and the exact-match test silently let the second form through, so
-    rows with no replay were compared as if they had one.
-    """
+    """True for the "missing replay" sentinel ("Missing File"), compared case-insensitively."""
     if not isinstance(stim_file, str):
         return True
     value = stim_file.strip().lower()

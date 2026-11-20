@@ -34,4 +34,7 @@ GAME = Game(
     not_emitted=docs.NOT_EMITTED,
     golden_sessions=[("sub-01", "ses-002")],
     ram_candidates=ram.SHINOBI_CANDIDATES,
+    # The task logged each repetition's duration in the events.tsv, also for the plays
+    # whose .bk2 was lost; it is kept as logged_duration next to the .bk2 duration.
+    logged_duration=True,
 )
