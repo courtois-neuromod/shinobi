@@ -1,0 +1,18 @@
+{
+    "Subject": "sub-02",
+    "Session": "ses-010",
+    "Run": "run-01",
+    "Level": "1",
+    "MP4File": "sub-02/ses-010/game_replays/sub-02_ses-010_task-shinobi_run-01_level-1_rep-000_recording.mp4",
+    "IndexInRun": 0,
+    "IndexGlobal": 91,
+    "IndexLevel": 44,
+    "Phase": null,
+    "Outcome": "cleared",
+    "Duration": 180.13333333333333,
+    "FrameCount": 10808,
+    "ScoreGained": 39690,
+    "HealthLost": 6,
+    "ShurikensThrown": 3,
+    "EnemiesDefeated": 31
+}
