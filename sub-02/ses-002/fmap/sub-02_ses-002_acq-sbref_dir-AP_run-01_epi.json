@@ -32,7 +32,6 @@
   "InstitutionalDepartmentName": "Department",
   "IntendedFor": [
     "ses-002/func/sub-02_ses-002_task-shinobi_run-01_bold.nii.gz",
-    "ses-002/func/sub-02_ses-002_task-shinobi_run-02_bold.nii.gz",
     "ses-002/func/sub-02_ses-002_task-shinobi_run-03_bold.nii.gz",
     "ses-002/func/sub-02_ses-002_task-shinobi_run-04_bold.nii.gz",
     "ses-002/func/sub-02_ses-002_task-shinobi_run-05_bold.nii.gz"
