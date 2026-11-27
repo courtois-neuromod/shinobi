@@ -10,6 +10,8 @@
 *.tgz annex.largefiles=anything
 *_scans.tsv annex.largefiles=anything
 *.bk2 annex.largefiles=anything
+*.mp4 annex.largefiles=anything
+*.npy annex.largefiles=anything
 *_events.tsv annex.largefiles=anything
 .bidsignore
 *.git annex.largefiles=anything
