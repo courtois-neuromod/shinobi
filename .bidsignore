@@ -1,6 +1,7 @@
 **/anat/*localizer*
 **/anat/*scout*
-**/*__dup*
-*/*/gamelogs/**
-tests/
-cleaning/
+**/*_dup*
+**/gamelogs
+*_dup-*
+DATASET.md
+**/func/*_desc-*_events.tsv
