@@ -8,9 +8,9 @@ name: events-tests
 
 on:
   push:
-    branches: [ main, dev_replays ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, dev_replays ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
